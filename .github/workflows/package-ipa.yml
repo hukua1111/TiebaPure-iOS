@@ -4,6 +4,11 @@ name: Package unsigned IPA
 # artifact. Unsigned builds cannot be installed as-is: re-sign them with your
 # own certificate before sideloading.
 on:
+  # Pushing the integration branch packages an IPA automatically, so a fork can
+  # produce a build without any manual dispatch. Any other branch has to ask.
+  push:
+    branches:
+      - ios15-support
   workflow_dispatch:
 
 permissions:
