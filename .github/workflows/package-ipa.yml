@@ -12,7 +12,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  # Needed to attach the IPA to a release, which is the only download channel
+  # that does not require a GitHub session.
+  contents: write
 
 env:
   DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
@@ -70,3 +72,17 @@ jobs:
           path: ${{ env.IPA_PATH }}
           if-no-files-found: error
           retention-days: 14
+
+      - name: Attach IPA to the preview release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="ios15-preview"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$IPA_PATH" --clobber
+          else
+            gh release create "$tag" "$IPA_PATH" \
+              --title "iOS 15 预览构建" \
+              --notes "由 $(git rev-parse --short HEAD) 构建的未签名 IPA（iOS 15.0+），安装前需自行重签。" \
+              --prerelease
+          fi
