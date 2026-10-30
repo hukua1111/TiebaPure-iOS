@@ -49,10 +49,9 @@ struct CompatibleImagePickerButton<Label: View>: View {
             ModernPhotoPickerButton(
                 selectionLimit: selectionLimit,
                 isDisabled: isDisabled,
-                onPick: onPick
-            ) {
-                label
-            }
+                onPick: onPick,
+                label: label
+            )
         } else {
             Button {
                 isPresentingLegacyPicker = true

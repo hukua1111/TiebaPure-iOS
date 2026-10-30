@@ -211,31 +211,31 @@ private struct CompatibleScrollViewTuner: UIViewRepresentable {
 /// iOS 15 has no such negotiation, so the preferred (horizontal) layout is used
 /// as-is, except at accessibility text sizes where the compact variant is what
 /// the negotiation would end up choosing anyway.
-struct CompatibleViewThatFits<Preferred: View, Compact: View>: View {
+struct CompatibleViewThatFits<Preferred: View, Fallback: View>: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private let axis: Axis.Set
     private let preferred: Preferred
-    private let compact: Compact
+    private let fallback: Fallback
 
     init(
         in axis: Axis.Set = .horizontal,
         @ViewBuilder preferred: () -> Preferred,
-        @ViewBuilder compact: () -> Compact
+        @ViewBuilder fallback: () -> Fallback
     ) {
         self.axis = axis
         self.preferred = preferred()
-        self.compact = compact()
+        self.fallback = fallback()
     }
 
     var body: some View {
         if #available(iOS 16.0, *) {
             ViewThatFits(in: axis) {
                 preferred
-                compact
+                fallback
             }
         } else if dynamicTypeSize.isAccessibilitySize {
-            compact
+            fallback
         } else {
             preferred
         }
@@ -389,7 +389,8 @@ extension View {
     /// keeps the design inherited from its context.
     @ViewBuilder
     func compatibleMonospacedFontDesign() -> some View {
-        if #available(iOS 16.0, *) {
+        // `fontDesign` is iOS 16.1, not 16.0.
+        if #available(iOS 16.1, *) {
             fontDesign(.monospaced)
         } else {
             self

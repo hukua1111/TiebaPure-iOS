@@ -145,11 +145,12 @@ struct BrowsingHistoryView: View {
             }
         }
         .compatibleOnChange(of: blocklistStore.entries) { _, _ in
-            guard let activeEntry,
-                  BrowsingHistoryListPolicy.shouldKeep(
-                    activeEntry,
-                    blocklist: currentBlocklist
-                  ) == false else { return }
+            guard let activeEntry else { return }
+            let isStillVisible = BrowsingHistoryListPolicy.shouldKeep(
+                activeEntry,
+                blocklist: currentBlocklist
+            )
+            guard isStillVisible == false else { return }
             self.activeEntry = nil
         }
         .compatibleOnChange(of: scenePhase) { _, phase in
