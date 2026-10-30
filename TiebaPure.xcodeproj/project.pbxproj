@@ -100,6 +100,7 @@
 		7189EC19091324F1EF6886C5 /* OrderedCollectionPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFC583D811BB2682A40FF679 /* OrderedCollectionPersistence.swift */; };
 		71CE2CA03E418210ED2CCF8B /* CapsuleLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 994E9D3128F82A0683DA39E0 /* CapsuleLabel.swift */; };
 		7364CD4DC533CA94A061941E /* CompatibleUIFoundationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16EEFF870AC95D5BA9A0AABD /* CompatibleUIFoundationTests.swift */; };
+		C0A1B2C3D4E5F60718293A7C /* CompatibleNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A1B2C3D4E5F60718293A7B /* CompatibleNavigationTests.swift */; };
 		736CA9D7B75258F513F36463 /* TiebaPureTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25F6DDA828E44F9B5A0E5D9 /* TiebaPureTheme.swift */; };
 		76335BCC2EF12774CA12ACC1 /* ContentSubmission.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6FB0DE22872019BC145C2AF /* ContentSubmission.swift */; };
 		7670D2DD682E7DA328CABB62 /* EmoticonResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2FAEA095A18F41BED60B8D /* EmoticonResourceTests.swift */; };
@@ -107,6 +108,9 @@
 		7A6AB3811639046A81C2CB53 /* TiebaPostingBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC28DAC5B04603ABECBEBF97 /* TiebaPostingBootstrap.swift */; };
 		7ABBC168BCF747C297537AB6 /* VideoAudioSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE6EA296C633FE6B2A0AD3 /* VideoAudioSessionTests.swift */; };
 		7CEA7F2EE7BE862C3706356A /* CompatibleUnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06656E39A13E9DD402A3E9D7 /* CompatibleUnavailableView.swift */; };
+		C0A1B2C3D4E5F60718293A4C /* CompatibleImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A1B2C3D4E5F60718293A4B /* CompatibleImagePicker.swift */; };
+		C0A1B2C3D4E5F60718293A5C /* CompatibleModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A1B2C3D4E5F60718293A5B /* CompatibleModifiers.swift */; };
+		C0A1B2C3D4E5F60718293A6C /* CompatibleNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A1B2C3D4E5F60718293A6B /* CompatibleNavigation.swift */; };
 		8013F79EDBAB28236D574DAD /* VoicePlaybackControlTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ABAA8240FEE5D60D5C61349 /* VoicePlaybackControlTests.swift */; };
 		80239D3CC75F3B5A44A8BEDA /* TiebaPureUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB433765723C53B6E8A6CA9B /* TiebaPureUITests.swift */; };
 		8028A9708BDE36C7BB815CEF /* SearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DDB351392A69BC42810B9E /* SearchResult.swift */; };
@@ -264,6 +268,9 @@
 		00A0FAAA54B2D05276E46330 /* SessionExpirationMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionExpirationMonitorTests.swift; sourceTree = "<group>"; };
 		034D76B7DA1D80733B718828 /* MediaPreviewHeroAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPreviewHeroAnimator.swift; sourceTree = "<group>"; };
 		06656E39A13E9DD402A3E9D7 /* CompatibleUnavailableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibleUnavailableView.swift; sourceTree = "<group>"; };
+		C0A1B2C3D4E5F60718293A4B /* CompatibleImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibleImagePicker.swift; sourceTree = "<group>"; };
+		C0A1B2C3D4E5F60718293A5B /* CompatibleModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibleModifiers.swift; sourceTree = "<group>"; };
+		C0A1B2C3D4E5F60718293A6B /* CompatibleNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibleNavigation.swift; sourceTree = "<group>"; };
 		06BFF7EDD31716056CE12B69 /* TiebaAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TiebaAPI.swift; sourceTree = "<group>"; };
 		07566334FE43A9F9BF360D89 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		07C158046155BBD6748519CF /* TiebaContentSubmissionAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TiebaContentSubmissionAPI.swift; sourceTree = "<group>"; };
@@ -283,6 +290,7 @@
 		1626D4B0DD88E88576EBC2EB /* ThreadDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadDetailView.swift; sourceTree = "<group>"; };
 		16DDB351392A69BC42810B9E /* SearchResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResult.swift; sourceTree = "<group>"; };
 		16EEFF870AC95D5BA9A0AABD /* CompatibleUIFoundationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibleUIFoundationTests.swift; sourceTree = "<group>"; };
+		C0A1B2C3D4E5F60718293A7B /* CompatibleNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibleNavigationTests.swift; sourceTree = "<group>"; };
 		1781B1F0906AC36975BFDE9F /* LegacyScrollTelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyScrollTelemetryTests.swift; sourceTree = "<group>"; };
 		1CB122673DB1880647B37AE8 /* ContentDraftMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentDraftMigrationTests.swift; sourceTree = "<group>"; };
 		1D6B235101269A6DE9BEB53A /* LogoutCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoutCoordinator.swift; sourceTree = "<group>"; };
@@ -535,6 +543,9 @@
 				674313EBDA3BABF79049EF20 /* AvatarView.swift */,
 				994E9D3128F82A0683DA39E0 /* CapsuleLabel.swift */,
 				06656E39A13E9DD402A3E9D7 /* CompatibleUnavailableView.swift */,
+				C0A1B2C3D4E5F60718293A4B /* CompatibleImagePicker.swift */,
+				C0A1B2C3D4E5F60718293A5B /* CompatibleModifiers.swift */,
+				C0A1B2C3D4E5F60718293A6B /* CompatibleNavigation.swift */,
 				40014AEAB18EA73BA47B8C64 /* CompatibleValueChange.swift */,
 				78FABF04E476AC1533EBDFA2 /* InteractiveNavigationPop.swift */,
 				9DC309A0384A60EB41BF7B46 /* LegacyScrollTelemetry.swift */,
@@ -739,6 +750,7 @@
 				D1180626C13544DCC568FA5B /* AccountThreadFavoritesTests.swift */,
 				DBA0A4653556BD11ACA8C0A3 /* AnonymousLiveSmokeTests.swift */,
 				7D258A9BF97B365AE98B663F /* AuthSessionTests.swift */,
+				C0A1B2C3D4E5F60718293A7B /* CompatibleNavigationTests.swift */,
 				16EEFF870AC95D5BA9A0AABD /* CompatibleUIFoundationTests.swift */,
 				08C0F8A37BD6F0E4EA09BFCD /* ContentComposerPolicyTests.swift */,
 				A37648A3CE4B69FBC511A204 /* ContentDraftCodecPolicyTests.swift */,
@@ -1151,6 +1163,9 @@
 				71CE2CA03E418210ED2CCF8B /* CapsuleLabel.swift in Sources */,
 				5FE25FDC40B4F42C42A3787C /* CommonRequest.pb.swift in Sources */,
 				7CEA7F2EE7BE862C3706356A /* CompatibleUnavailableView.swift in Sources */,
+				C0A1B2C3D4E5F60718293A4C /* CompatibleImagePicker.swift in Sources */,
+				C0A1B2C3D4E5F60718293A5C /* CompatibleModifiers.swift in Sources */,
+				C0A1B2C3D4E5F60718293A6C /* CompatibleNavigation.swift in Sources */,
 				45FA5C71106C0E325C3D4798 /* CompatibleValueChange.swift in Sources */,
 				560E7C25470B13349BE24055 /* ContentBlock.swift in Sources */,
 				691639A3C4F64DE3F892A98D /* ContentBlockView.swift in Sources */,
@@ -1290,6 +1305,7 @@
 				2BE5F35354B2C09E7C1BC462 /* AccountThreadFavoritesTests.swift in Sources */,
 				D0B17827BAA31E0CF4AD29ED /* AnonymousLiveSmokeTests.swift in Sources */,
 				4C637302510F02D057F7F18D /* AuthSessionTests.swift in Sources */,
+				C0A1B2C3D4E5F60718293A7C /* CompatibleNavigationTests.swift in Sources */,
 				7364CD4DC533CA94A061941E /* CompatibleUIFoundationTests.swift in Sources */,
 				96E558670B2758520F748005 /* ContentComposerPolicyTests.swift in Sources */,
 				A79F6207D35B14A52B3CDD6A /* ContentDraftCodecPolicyTests.swift in Sources */,
@@ -1421,7 +1437,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1437,7 +1453,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 59;
+				CURRENT_PROJECT_VERSION = 60;
 				INFOPLIST_FILE = TiebaPure/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1454,7 +1470,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				CURRENT_PROJECT_VERSION = 59;
+				CURRENT_PROJECT_VERSION = 60;
 				INFOPLIST_FILE = TiebaPureOpenIn/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1507,7 +1523,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				CURRENT_PROJECT_VERSION = 59;
+				CURRENT_PROJECT_VERSION = 60;
 				INFOPLIST_FILE = TiebaPureOpenIn/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1527,7 +1543,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 59;
+				CURRENT_PROJECT_VERSION = 60;
 				INFOPLIST_FILE = TiebaPure/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1625,7 +1641,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

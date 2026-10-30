@@ -72,7 +72,7 @@ struct ForumThreadsView: View {
         }
         .navigationTitle(forum.displayName)
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: searchIsActive) {
+        .compatibleNavigationDestination(isPresented: searchIsActive) {
             if let activeSearch {
                 SearchResultsView(account: account, scope: activeSearch.scope, initialKeyword: activeSearch.keyword)
                     .interactiveNavigationPopStateSync {
@@ -80,7 +80,7 @@ struct ForumThreadsView: View {
                     }
             }
         }
-        .navigationDestination(isPresented: threadIsActive) {
+        .compatibleNavigationDestination(isPresented: threadIsActive) {
             if let activeThread {
                 ThreadDetailView(
                     account: account,
@@ -92,7 +92,7 @@ struct ForumThreadsView: View {
                 }
             }
         }
-        .navigationDestination(isPresented: userIsActive) {
+        .compatibleNavigationDestination(isPresented: userIsActive) {
             if let selectedUser {
                 UserProfileView(account: account, user: selectedUser)
                     .interactiveNavigationPopStateSync {
@@ -164,7 +164,7 @@ struct ForumThreadsView: View {
             threads.removeAll { TiebaContentFilter.shouldKeep(thread: $0) == false }
         }
         .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
                 Button {
                     if account != nil, forumMembership == nil {
                         Task { await loadForumMembership() }

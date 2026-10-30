@@ -47,7 +47,9 @@ jobs:
             test -only-testing:TiebaPureTests \
             -skip-testing:TiebaPureTests/AnonymousLiveSmokeTests
 
-      - name: Verify iOS 16 compatibility linkage
+      # The app must still load on iOS 15, so every SwiftData reference has to
+      # stay behind a weak link and no symbol may be resolved eagerly.
+      - name: Verify iOS 15 compatibility linkage
         run: |
           APP="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/TiebaPure.app"
           APP_BINARY="$APP/TiebaPure.debug.dylib"
@@ -119,8 +121,8 @@ jobs:
             -derivedDataPath "$DERIVED_DATA" \
             build CODE_SIGNING_ALLOWED=NO
           APP="$DERIVED_DATA/Build/Products/Release-iphoneos/TiebaPure.app"
-          test "$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$APP/Info.plist")" = 16.4
-          test "$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$APP/PlugIns/TiebaPureOpenIn.appex/Info.plist")" = 16.4
+          test "$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$APP/Info.plist")" = 15.0
+          test "$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$APP/PlugIns/TiebaPureOpenIn.appex/Info.plist")" = 15.0
           load_commands="$(otool -l "$APP/TiebaPure" | awk '/cmd LC_LOAD/{command=$2} /SwiftData.framework/{print command}' | sort -u)"
           test "$load_commands" = LC_LOAD_WEAK_DYLIB
           test -f "$APP/PrivacyInfo.xcprivacy"

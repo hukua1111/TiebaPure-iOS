@@ -364,7 +364,7 @@ private final class ScrollFrameProbe: NSObject {
         activeFrameCount = intervals.count
         delayedFinishTask = Task { @MainActor in
             do {
-                try await Task.sleep(for: .milliseconds(650))
+                try await Task.sleep(nanoseconds: CompatibleTaskDelay.nanoseconds(for: 0.65))
             } catch {
                 return
             }

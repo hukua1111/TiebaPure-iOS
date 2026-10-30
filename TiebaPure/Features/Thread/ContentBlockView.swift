@@ -518,6 +518,7 @@ final class InlineContentTextView: UITextView {
     private var cachedFittingLineBreakMode: NSLineBreakMode = .byWordWrapping
     private var cachedFittingDisplayScale: CGFloat = 0
     private var cachedFittingSize: CGSize = .zero
+    private var lastIntrinsicContentWidth: CGFloat = 0
 
     init() {
         // Let UITextView own its single live TextKit stack. Supplying a custom
@@ -804,6 +805,13 @@ final class InlineContentTextView: UITextView {
         // which is the source of intermittent clipping during cell reuse.
         configureTextContainer(forViewWidth: bounds.width)
         super.layoutSubviews()
+        // iOS 15 measures through `intrinsicContentSize`, so a width change has
+        // to be announced. iOS 16 and newer size the view from the representable
+        // hook instead.
+        if #unavailable(iOS 16.0), abs(lastIntrinsicContentWidth - bounds.width) > 0.5 {
+            lastIntrinsicContentWidth = bounds.width
+            invalidateIntrinsicContentSize()
+        }
         // UIKit moves a selectable text view's internal viewport while it
         // positions selection handles. Forcing that offset back to zero here
         // makes UIKit request another layout, creating a main-thread loop.
@@ -868,6 +876,30 @@ final class InlineContentTextView: UITextView {
         )
         setNeedsLayout()
         setNeedsDisplay()
+        if #unavailable(iOS 16.0) {
+            invalidateIntrinsicContentSize()
+        }
+    }
+
+    // MARK: - iOS 15 sizing
+
+    /// `UIViewRepresentable.sizeThatFits(_:uiView:context:)` is iOS 16 only, so
+    /// on iOS 15 UIKit has to answer the height question itself. The measurement
+    /// is the same one the iOS 16 hook performs: the paragraph laid out at the
+    /// width SwiftUI proposed, memoized by `fittingSize`.
+    override var intrinsicContentSize: CGSize {
+        guard #unavailable(iOS 16.0) else { return super.intrinsicContentSize }
+        let width = bounds.width
+        guard width > 0, textStorage.length > 0 else {
+            return CGSize(width: UIView.noIntrinsicMetric, height: 0)
+        }
+        return fittingSize(
+            width: width,
+            attributedText: textStorage,
+            renderID: appliedRenderID,
+            maximumNumberOfLines: textContainer.maximumNumberOfLines,
+            lineBreakMode: textContainer.lineBreakMode
+        )
     }
 }
 
@@ -1179,6 +1211,10 @@ struct InlineContentText: UIViewRepresentable {
         )
     }
 
+    // The representable sizing hook, and `ProposedViewSize` itself, are iOS 16
+    // only. iOS 15 answers the same question through the text view's intrinsic
+    // content size, which is why the annotation does not change the layout.
+    @available(iOS 16.0, *)
     func sizeThatFits(
         _ proposal: ProposedViewSize,
         uiView: InlineContentTextView,

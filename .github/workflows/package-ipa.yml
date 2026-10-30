@@ -1,0 +1,46 @@
+name: Package unsigned IPA
+
+# Builds an unsigned .ipa from the current branch and uploads it as a build
+# artifact. Unsigned builds cannot be installed as-is: re-sign them with your
+# own certificate before sideloading.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+
+jobs:
+  package:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      # Regenerate the project from project.yml first. The packaging script
+      # refuses to package when the committed project differs from the spec, and
+      # regenerating in place keeps both sides of that comparison identical while
+      # also validating that the spec itself still builds a project.
+      - name: Regenerate project from project.yml
+        run: xcodegen generate --spec project.yml
+
+      - name: Build unsigned IPA
+        run: |
+          scripts/package-unsigned-ipa.sh
+          test -f build/TiebaPure-unsigned.ipa
+          ls -lh build/TiebaPure-unsigned.ipa
+          shasum -a 256 build/TiebaPure-unsigned.ipa
+          printf 'IPA_PATH=build/TiebaPure-unsigned.ipa\n' >> "$GITHUB_ENV"
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: TiebaPure-unsigned-ipa
+          path: ${{ env.IPA_PATH }}
+          if-no-files-found: error
+          retention-days: 14

@@ -40,7 +40,7 @@ struct MessagesView: View {
         .background(TiebaPureTheme.ColorToken.readerGroupedBackground)
         .navigationTitle("消息")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: messageIsActive) {
+        .compatibleNavigationDestination(isPresented: messageIsActive) {
             if let activeMessage {
                 ThreadDetailView(
                     account: account,

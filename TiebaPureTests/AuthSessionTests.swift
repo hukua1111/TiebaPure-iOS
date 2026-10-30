@@ -201,8 +201,8 @@ final class AuthSessionTests: XCTestCase {
 
     func testLegacyFileReaderOnlyLoadsAndClearsData() async throws {
         let fileURL = FileManager.default.temporaryDirectory
-            .appending(path: UUID().uuidString, directoryHint: .isDirectory)
-            .appending(path: "account.json")
+            .compatibleAppending(path: UUID().uuidString, isDirectory: true)
+            .compatibleAppending(path: "account.json")
         let service = FileAccountStoreService(fileURL: fileURL)
         let data = try JSONEncoder().encode(Self.makeAccount())
 

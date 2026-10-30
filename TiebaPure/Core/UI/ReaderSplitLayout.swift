@@ -105,6 +105,7 @@ struct ReaderSplitLayout<Route: Hashable, ListColumn: View, DetailRoot: View>: V
     @Binding var detailPath: [ReaderSplitThreadRoute]
     var openThreadInDetail: ((ReaderSplitThreadRoute) -> Void)?
     var openThreadInCompact: ((ReaderSplitThreadRoute) -> Void)?
+    let listDestination: (Route) -> AnyView
     let listColumn: () -> ListColumn
     let detailRoot: (ReaderSplitDetailPlaceholder) -> DetailRoot
 
@@ -114,6 +115,7 @@ struct ReaderSplitLayout<Route: Hashable, ListColumn: View, DetailRoot: View>: V
         detailPath: Binding<[ReaderSplitThreadRoute]>,
         openThreadInDetail: ((ReaderSplitThreadRoute) -> Void)? = nil,
         openThreadInCompact: ((ReaderSplitThreadRoute) -> Void)? = nil,
+        listDestination: @escaping (Route) -> AnyView,
         @ViewBuilder listColumn: @escaping () -> ListColumn,
         detailRoot: @escaping (ReaderSplitDetailPlaceholder) -> DetailRoot
     ) {
@@ -122,6 +124,7 @@ struct ReaderSplitLayout<Route: Hashable, ListColumn: View, DetailRoot: View>: V
         _detailPath = detailPath
         self.openThreadInDetail = openThreadInDetail
         self.openThreadInCompact = openThreadInCompact
+        self.listDestination = listDestination
         self.listColumn = listColumn
         self.detailRoot = detailRoot
     }
@@ -140,29 +143,30 @@ struct ReaderSplitLayout<Route: Hashable, ListColumn: View, DetailRoot: View>: V
         }
     }
 
+    @ViewBuilder
     private func splitNavigation(leadingColumnWidth: CGFloat) -> some View {
-        NavigationSplitView(columnVisibility: .constant(.doubleColumn)) {
-            splitListNavigation(leadingColumnWidth: leadingColumnWidth)
-        } detail: {
-            NavigationStack(path: $detailPath) {
-                detailRoot(ReaderSplitDetailPlaceholder())
-                    .navigationDestination(for: ReaderSplitThreadRoute.self) { route in
-                        ThreadDetailView(
-                            account: account,
-                            threadID: route.threadID,
-                            forumID: route.forumID,
-                            initialPostID: route.initialPostID,
-                            initialDestination: route.initialDestination,
-                            ownThreadDeletionTarget: route.ownThreadDeletionTarget,
-                            mainPostFallback: route.mainPostFallback
-                        )
-                        // Replacing the selection must never reuse the
-                        // previous thread's loaded state.
-                        .id(route)
-                    }
+        if #available(iOS 16.0, *) {
+            NavigationSplitView(columnVisibility: .constant(.doubleColumn)) {
+                splitListNavigation(leadingColumnWidth: leadingColumnWidth)
+            } detail: {
+                detailStack
+            }
+            .navigationSplitViewStyle(.balanced)
+        } else {
+            // iOS 15 has no NavigationSplitView. Two side-by-side stacks keep
+            // the same fixed-width list column and the same shared detail
+            // column, so the reader layout itself is unchanged.
+            HStack(spacing: 0) {
+                splitListNavigation(leadingColumnWidth: leadingColumnWidth)
+                    .frame(width: leadingColumnWidth)
+                    .frame(maxHeight: .infinity)
+
+                Divider()
+
+                detailStack
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .navigationSplitViewStyle(.balanced)
     }
 
     @ViewBuilder
@@ -172,7 +176,7 @@ struct ReaderSplitLayout<Route: Hashable, ListColumn: View, DetailRoot: View>: V
             // thread without a way back.
             splitListStack
                 .toolbar(removing: .sidebarToggle)
-                .navigationSplitViewColumnWidth(leadingColumnWidth)
+                .readerSplitColumnWidth(leadingColumnWidth)
                 .environment(\.isReaderSplitListColumn, true)
                 .environment(
                     \.readerSplitOpenThread,
@@ -180,7 +184,7 @@ struct ReaderSplitLayout<Route: Hashable, ListColumn: View, DetailRoot: View>: V
                 )
         } else {
             splitListStack
-                .navigationSplitViewColumnWidth(leadingColumnWidth)
+                .readerSplitColumnWidth(leadingColumnWidth)
                 .environment(\.isReaderSplitListColumn, true)
                 .environment(
                     \.readerSplitOpenThread,
@@ -189,20 +193,40 @@ struct ReaderSplitLayout<Route: Hashable, ListColumn: View, DetailRoot: View>: V
         }
     }
 
+    private var detailStack: some View {
+        CompatibleNavigationStack(path: $detailPath) {
+            detailRoot(ReaderSplitDetailPlaceholder())
+        } destination: { route in
+            ThreadDetailView(
+                account: account,
+                threadID: route.threadID,
+                forumID: route.forumID,
+                initialPostID: route.initialPostID,
+                initialDestination: route.initialDestination,
+                ownThreadDeletionTarget: route.ownThreadDeletionTarget,
+                mainPostFallback: route.mainPostFallback
+            )
+            // Replacing the selection must never reuse the previous thread's
+            // loaded state.
+            .id(route)
+        }
+    }
+
     private var splitListStack: some View {
-        NavigationStack(path: $navigationPath) {
+        CompatibleNavigationStack(path: $navigationPath) {
             listColumn()
+        } destination: { route in
+            listDestination(route)
         }
     }
 
     private var compactNavigation: some View {
-        NavigationStack(path: $navigationPath) {
-            listColumn()
-        }
-        // A compact handler lets the parent keep ownership of a thread opened
-        // by a nested list. The same selection remains transferable when the
-        // horizontal size class changes between compact and regular.
-        .environment(\.readerSplitOpenThread, compactOpenThreadAction)
+        splitListStack
+            // A compact handler lets the parent keep ownership of a thread
+            // opened by a nested list. The same selection remains transferable
+            // when the horizontal size class changes between compact and
+            // regular.
+            .environment(\.readerSplitOpenThread, compactOpenThreadAction)
     }
 
     private var resolvedOpenThread: (ReaderSplitThreadRoute) -> Void {
@@ -214,6 +238,20 @@ struct ReaderSplitLayout<Route: Hashable, ListColumn: View, DetailRoot: View>: V
     }
 }
 
+private extension View {
+    /// `navigationSplitViewColumnWidth(_:)` is iOS 16 only. The iOS 15 split
+    /// fallback sizes the column with an explicit frame instead, so the width
+    /// is a no-op there rather than a different layout.
+    @ViewBuilder
+    func readerSplitColumnWidth(_ width: CGFloat) -> some View {
+        if #available(iOS 16.0, *) {
+            navigationSplitViewColumnWidth(width)
+        } else {
+            self
+        }
+    }
+}
+
 extension ReaderSplitLayout where DetailRoot == ReaderSplitDetailPlaceholder {
     init(
         account: Account?,
@@ -221,6 +259,7 @@ extension ReaderSplitLayout where DetailRoot == ReaderSplitDetailPlaceholder {
         detailPath: Binding<[ReaderSplitThreadRoute]>,
         openThreadInDetail: ((ReaderSplitThreadRoute) -> Void)? = nil,
         openThreadInCompact: ((ReaderSplitThreadRoute) -> Void)? = nil,
+        listDestination: @escaping (Route) -> AnyView,
         @ViewBuilder listColumn: @escaping () -> ListColumn
     ) {
         self.init(
@@ -229,6 +268,7 @@ extension ReaderSplitLayout where DetailRoot == ReaderSplitDetailPlaceholder {
             detailPath: detailPath,
             openThreadInDetail: openThreadInDetail,
             openThreadInCompact: openThreadInCompact,
+            listDestination: listDestination,
             listColumn: listColumn,
             detailRoot: { $0 }
         )

@@ -33,9 +33,10 @@ struct ForumHubView: View {
             openThreadInCompact: { route in
                 openThreadFromForum(route)
             },
+            listDestination: { route in AnyView(destination(for: route)) },
             listColumn: { hubColumn }
         )
-        .toolbar(.visible, for: .tabBar)
+        .compatibleTabBarVisibility(.visible)
         .onChange(of: horizontalSizeClass) { sizeClass in
             bridgeDetailForSizeClassChange(to: sizeClass)
         }
@@ -180,7 +181,7 @@ struct ForumHubView: View {
                 }
             }
         }
-        .scrollContentBackground(.hidden)
+        .compatibleHiddenScrollContentBackground()
         .accessibilityIdentifier("forum-hub-list")
         .shortPullRefresh(
             isEnabled: isLoadingFollowed == false,
@@ -241,66 +242,70 @@ struct ForumHubView: View {
             requestGeneration += 1
             isLoadingFollowed = false
         }
-        .navigationDestination(for: ForumHubNavigationRoute.self) { route in
-            switch route {
-            case let .forum(forumRoute):
-                ForumThreadsView(
-                    account: account,
-                    forum: forumRoute.forum,
-                    openThreadInParent: openThreadFromForum,
-                    openSearchInParent: openSearchFromForum,
-                    openUserInParent: { user in
-                        openUser(user, sourceThreadID: nil)
-                    }
-                )
-            case let .thread(threadRoute):
-                ThreadDetailView(
-                    account: account,
-                    threadID: threadRoute.threadID,
-                    forumID: threadRoute.forumID,
-                    initialPostID: threadRoute.initialPostID,
-                    initialDestination: threadRoute.initialDestination,
-                    ownThreadDeletionTarget: threadRoute.ownThreadDeletionTarget,
-                    openSearchInParent: { scope in
-                        openSearch(scope)
-                    },
-                    openUserInParent: { user in
-                        openUser(user, sourceThreadID: threadRoute.threadID)
-                    },
-                    openForumInParent: openForum
-                )
-                .id(threadRoute)
-            case let .search(searchRoute):
-                SearchResultsView(
-                    account: account,
-                    scope: .forum(searchRoute.forum.forum),
-                    initialKeyword: searchRoute.keyword,
-                    openThreadInParent: { route in
-                        openThreadFromForum(
-                            ReaderSplitThreadRoute(
-                                threadID: route.threadID,
-                                forumID: route.forumID,
-                                initialPostID: route.postID
-                            )
+    }
+
+    /// Destination for a value pushed onto the hub stack. Registered on the
+    /// stack itself so the iOS 15 fallback can render each level from the path.
+    @ViewBuilder
+    private func destination(for route: ForumHubNavigationRoute) -> some View {
+        switch route {
+        case let .forum(forumRoute):
+            ForumThreadsView(
+                account: account,
+                forum: forumRoute.forum,
+                openThreadInParent: openThreadFromForum,
+                openSearchInParent: openSearchFromForum,
+                openUserInParent: { user in
+                    openUser(user, sourceThreadID: nil)
+                }
+            )
+        case let .thread(threadRoute):
+            ThreadDetailView(
+                account: account,
+                threadID: threadRoute.threadID,
+                forumID: threadRoute.forumID,
+                initialPostID: threadRoute.initialPostID,
+                initialDestination: threadRoute.initialDestination,
+                ownThreadDeletionTarget: threadRoute.ownThreadDeletionTarget,
+                openSearchInParent: { scope in
+                    openSearch(scope)
+                },
+                openUserInParent: { user in
+                    openUser(user, sourceThreadID: threadRoute.threadID)
+                },
+                openForumInParent: openForum
+            )
+            .id(threadRoute)
+        case let .search(searchRoute):
+            SearchResultsView(
+                account: account,
+                scope: .forum(searchRoute.forum.forum),
+                initialKeyword: searchRoute.keyword,
+                openThreadInParent: { route in
+                    openThreadFromForum(
+                        ReaderSplitThreadRoute(
+                            threadID: route.threadID,
+                            forumID: route.forumID,
+                            initialPostID: route.postID
                         )
-                    },
-                    openForumInParent: openForum,
-                    openUserInParent: { user in
-                        openUser(user, sourceThreadID: nil)
-                    }
-                )
-            case let .user(user, sourceThreadID):
-                UserProfileView(
-                    account: account,
-                    user: user,
-                    sourceThreadID: sourceThreadID,
-                    onReturnToSourceThread: {
-                        removeNavigationRouteIfCurrent(route)
-                    },
-                    openThreadInParent: openThreadFromForum,
-                    openForumInParent: openForum
-                )
-            }
+                    )
+                },
+                openForumInParent: openForum,
+                openUserInParent: { user in
+                    openUser(user, sourceThreadID: nil)
+                }
+            )
+        case let .user(user, sourceThreadID):
+            UserProfileView(
+                account: account,
+                user: user,
+                sourceThreadID: sourceThreadID,
+                onReturnToSourceThread: {
+                    removeNavigationRouteIfCurrent(route)
+                },
+                openThreadInParent: openThreadFromForum,
+                openForumInParent: openForum
+            )
         }
     }
 

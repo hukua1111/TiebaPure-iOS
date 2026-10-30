@@ -44,109 +44,109 @@ enum TiebaEndpoint {
     var url: URL {
         switch self {
         case .login:
-            return Self.appBase.appending(path: "/c/s/login")
+            return Self.appBase.compatibleAppending(path: "/c/s/login")
         case .postingLogin:
-            return Self.protobufBase.appending(path: "/c/s/login")
+            return Self.protobufBase.compatibleAppending(path: "/c/s/login")
         case .initNickname:
-            return Self.appBase.appending(path: "/c/s/initNickname")
+            return Self.appBase.compatibleAppending(path: "/c/s/initNickname")
         case .webMyInfo:
-            return Self.base.appending(path: "/mo/q/newmoindex")
+            return Self.base.compatibleAppending(path: "/mo/q/newmoindex")
         case .followedForums:
-            return Self.appBase.appending(path: "/c/f/forum/getforumlist")
+            return Self.appBase.compatibleAppending(path: "/c/f/forum/getforumlist")
         case .forumPageForm:
-            return Self.appBase.appending(path: "/c/f/frs/page")
+            return Self.appBase.compatibleAppending(path: "/c/f/frs/page")
         case .personalized:
             return Self.base
-                .appending(path: "/c/f/excellent/personalized")
-                .appending(queryItems: [.init(name: "cmd", value: "309264")])
+                .compatibleAppending(path: "/c/f/excellent/personalized")
+                .compatibleAppending(queryItems: [.init(name: "cmd", value: "309264")])
         case .frsPage:
             return Self.base
-                .appending(path: "/c/f/frs/page")
-                .appending(queryItems: [.init(name: "cmd", value: "301001")])
+                .compatibleAppending(path: "/c/f/frs/page")
+                .compatibleAppending(queryItems: [.init(name: "cmd", value: "301001")])
         case .pbPage:
             return Self.base
-                .appending(path: "/c/f/pb/page")
-                .appending(queryItems: [
+                .compatibleAppending(path: "/c/f/pb/page")
+                .compatibleAppending(queryItems: [
                     .init(name: "cmd", value: "302001"),
                     .init(name: "format", value: "protobuf")
                 ])
         case .pbFloor:
             return Self.base
-                .appending(path: "/c/f/pb/floor")
-                .appending(queryItems: [
+                .compatibleAppending(path: "/c/f/pb/floor")
+                .compatibleAppending(queryItems: [
                     .init(name: "cmd", value: "302002"),
                     .init(name: "format", value: "protobuf")
                 ])
         case .searchThread:
-            return Self.base.appending(path: "/mo/q/search/thread")
+            return Self.base.compatibleAppending(path: "/mo/q/search/thread")
         case .searchUser:
-            return Self.base.appending(path: "/mo/q/search/user")
+            return Self.base.compatibleAppending(path: "/mo/q/search/user")
         case .userProfile:
             return Self.protobufBase
-                .appending(path: "/c/u/user/profile")
-                .appending(queryItems: [
+                .compatibleAppending(path: "/c/u/user/profile")
+                .compatibleAppending(queryItems: [
                     .init(name: "cmd", value: "303012"),
                     .init(name: "format", value: "protobuf")
                 ])
         case .userThreads:
             return Self.protobufBase
-                .appending(path: "/c/u/feed/userpost")
-                .appending(queryItems: [
+                .compatibleAppending(path: "/c/u/feed/userpost")
+                .compatibleAppending(queryItems: [
                     .init(name: "cmd", value: "303002"),
                     .init(name: "format", value: "protobuf")
                 ])
         case .modifyProfile:
-            return Self.socialBase.appending(path: "/c/c/profile/modify")
+            return Self.socialBase.compatibleAppending(path: "/c/c/profile/modify")
         case .deleteOwnThread:
-            return Self.appBase.appending(path: "/c/c/bawu/delthread")
+            return Self.appBase.compatibleAppending(path: "/c/c/bawu/delthread")
         case .followUser:
-            return Self.socialBase.appending(path: "/c/c/user/follow")
+            return Self.socialBase.compatibleAppending(path: "/c/c/user/follow")
         case .unfollowUser:
-            return Self.socialBase.appending(path: "/c/c/user/unfollow")
+            return Self.socialBase.compatibleAppending(path: "/c/c/user/unfollow")
         case .followedUsers:
-            return Self.socialBase.appending(path: "/c/u/follow/followList")
+            return Self.socialBase.compatibleAppending(path: "/c/u/follow/followList")
         case .followers:
-            return Self.socialBase.appending(path: "/c/u/fans/page")
+            return Self.socialBase.compatibleAppending(path: "/c/u/fans/page")
         case .resolveForumID:
             // The www host answers this path with a 301 down to plain http,
             // which the client refuses to follow; the app host serves the same
             // JSON over https.
-            return Self.appBase.appending(path: "/f/commit/share/fnameShareApi")
+            return Self.appBase.compatibleAppending(path: "/f/commit/share/fnameShareApi")
         case .forumMembership:
-            return Self.socialBase.appending(path: "/c/f/forum/getUserForumLevelInfo")
+            return Self.socialBase.compatibleAppending(path: "/c/f/forum/getUserForumLevelInfo")
         case .followForum:
-            return Self.socialBase.appending(path: "/c/c/forum/like")
+            return Self.socialBase.compatibleAppending(path: "/c/c/forum/like")
         case .unfollowForum:
-            return Self.socialBase.appending(path: "/c/c/forum/unfavolike")
+            return Self.socialBase.compatibleAppending(path: "/c/c/forum/unfavolike")
         case .signForum:
-            return Self.appBase.appending(path: "/c/c/forum/sign")
+            return Self.appBase.compatibleAppending(path: "/c/c/forum/sign")
         case .threadStoreList:
-            return Self.appBase.appending(path: "/c/u/feed/threadStoreList")
+            return Self.appBase.compatibleAppending(path: "/c/u/feed/threadStoreList")
         case .addThreadStore:
-            return Self.appBase.appending(path: "/c/c/post/addstore")
+            return Self.appBase.compatibleAppending(path: "/c/c/post/addstore")
         case .removeThreadStore:
-            return Self.appBase.appending(path: "/c/c/post/rmstore")
+            return Self.appBase.compatibleAppending(path: "/c/c/post/rmstore")
         case .agreePost:
-            return Self.socialBase.appending(path: "/c/c/agree/opAgree")
+            return Self.socialBase.compatibleAppending(path: "/c/c/agree/opAgree")
         case .webAddThread:
-            return Self.base.appending(path: "/f/commit/thread/add")
+            return Self.base.compatibleAppending(path: "/f/commit/thread/add")
         case let .webAddPost(timestamp):
             return Self.base
-                .appending(path: "/mo/q/apubpost")
-                .appending(queryItems: [.init(name: "_t", value: String(timestamp))])
+                .compatibleAppending(path: "/mo/q/apubpost")
+                .compatibleAppending(queryItems: [.init(name: "_t", value: String(timestamp))])
         case let .webUploadPicture(nonce):
             return Self.base
-                .appending(path: "/mo/q/cooluploadpic")
-                .appending(queryItems: [
+                .compatibleAppending(path: "/mo/q/cooluploadpic")
+                .compatibleAppending(queryItems: [
                     .init(name: "type", value: "ajax"),
                     .init(name: "r", value: nonce)
                 ])
         case .addPost:
             return Self.protobufBase
-                .appending(path: "/c/c/post/add")
-                .appending(queryItems: [.init(name: "cmd", value: "309731")])
+                .compatibleAppending(path: "/c/c/post/add")
+                .compatibleAppending(queryItems: [.init(name: "cmd", value: "309731")])
         case .uploadPicture:
-            return Self.protobufBase.appending(path: "/c/s/uploadPicture")
+            return Self.protobufBase.compatibleAppending(path: "/c/s/uploadPicture")
         }
     }
 }

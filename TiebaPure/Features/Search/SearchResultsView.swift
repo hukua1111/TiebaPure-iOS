@@ -97,7 +97,7 @@ struct SearchResultsView: View {
         .contentShape(Rectangle())
         .navigationTitle(scope.title)
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: threadIsActive) {
+        .compatibleNavigationDestination(isPresented: threadIsActive) {
             if let activeThread {
                 ThreadDetailView(
                     account: account,
@@ -110,7 +110,7 @@ struct SearchResultsView: View {
                 }
             }
         }
-        .navigationDestination(isPresented: forumIsActive) {
+        .compatibleNavigationDestination(isPresented: forumIsActive) {
             if let activeForum {
                 ForumThreadsView(account: account, forum: activeForum)
                     .interactiveNavigationPopStateSync {
@@ -118,7 +118,7 @@ struct SearchResultsView: View {
                     }
             }
         }
-        .navigationDestination(isPresented: userIsActive) {
+        .compatibleNavigationDestination(isPresented: userIsActive) {
             if let selectedUser {
                 UserProfileView(account: account, user: selectedUser)
                     .interactiveNavigationPopStateSync {
@@ -492,7 +492,7 @@ struct SearchResultsView: View {
     }
 
     private var controls: some View {
-        ViewThatFits(in: .horizontal) {
+        CompatibleViewThatFits(in: .horizontal) {
             HStack(alignment: .center, spacing: TiebaPureTheme.Spacing.sm) {
                 filterPicker
                 Spacer(minLength: TiebaPureTheme.Spacing.sm)
@@ -504,6 +504,7 @@ struct SearchResultsView: View {
                 maxHeight: SearchResultsControlsLayout.controlHeight,
                 alignment: .center
             )
+        } fallback: {
             VStack(alignment: .leading, spacing: TiebaPureTheme.Spacing.xs) {
                 filterPicker
                 sortMenu
@@ -742,7 +743,7 @@ struct StandaloneSearchNavigationView: View {
     let onClose: () -> Void
 
     var body: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             SearchResultsView(
                 account: account,
                 scope: scope,

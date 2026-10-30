@@ -778,6 +778,10 @@ struct ImagePreviewSourceAnchorReader: UIViewRepresentable {
         }
     }
 
+    // The representable sizing hook, and `ProposedViewSize` itself, are iOS 16
+    // only. The source view reports no intrinsic size, so iOS 15 fills the
+    // proposed frame exactly like the hook below does.
+    @available(iOS 16.0, *)
     func sizeThatFits(
         _ proposal: ProposedViewSize,
         uiView: ImagePreviewSourceView,
@@ -3977,8 +3981,9 @@ struct FullScreenImageView: View {
             if dynamicTypeSize.isAccessibilitySize {
                 stackedBottomBar
             } else {
-                ViewThatFits(in: .horizontal) {
+                CompatibleViewThatFits(in: .horizontal) {
                     compactBottomBar
+                } fallback: {
                     stackedBottomBar
                 }
             }
@@ -4081,7 +4086,7 @@ struct FullScreenImageView: View {
     private var originalButtonLabel: some View {
         if currentOriginalLoadState == .loading {
             Text(originalImageButtonTitle)
-                .fontDesign(.monospaced)
+                .compatibleMonospacedFontDesign()
                 .lineLimit(1)
         } else if dynamicTypeSize.isAccessibilitySize {
             VStack(spacing: TiebaPureTheme.Spacing.xs) {

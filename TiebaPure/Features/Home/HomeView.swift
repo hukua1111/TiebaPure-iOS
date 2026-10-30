@@ -38,12 +38,13 @@ struct HomeView: View {
             detailPath: $splitDetailPath,
             openThreadInDetail: { openThreadInSplitDetail($0) },
             openThreadInCompact: { openThreadInCompactStack($0) },
+            listDestination: { route in AnyView(destination(for: route)) },
             listColumn: { feedColumn },
             detailRoot: { placeholder in
                 // Regular width routes global search into the detail column so
                 // the feed list stays visible and drivable next to it.
                 placeholder
-                    .navigationDestination(isPresented: splitSearchIsActive) {
+                    .compatibleNavigationDestination(isPresented: splitSearchIsActive) {
                         if let activeSearch {
                             SearchResultsView(account: account, scope: .global, initialKeyword: activeSearch.keyword)
                                 .interactiveNavigationPopStateSync {
@@ -53,7 +54,7 @@ struct HomeView: View {
                     }
             }
         )
-        .toolbar(.visible, for: .tabBar)
+        .compatibleTabBarVisibility(.visible)
         .onChange(of: horizontalSizeClass) { sizeClass in
             foldNavigationForSizeClassChange(to: sizeClass)
         }
@@ -79,6 +80,66 @@ struct HomeView: View {
         }
     }
 
+    /// Destination for a value pushed onto the feed stack. Registered on the
+    /// stack itself so the iOS 15 fallback can render each level from the path.
+    @ViewBuilder
+    private func destination(for route: HomeNavigationRoute) -> some View {
+        switch route {
+        case let .thread(threadRoute):
+            ThreadDetailView(
+                account: account,
+                threadID: threadRoute.threadID,
+                forumID: threadRoute.forumID,
+                initialPostID: threadRoute.initialPostID,
+                initialDestination: threadRoute.initialDestination,
+                ownThreadDeletionTarget: threadRoute.ownThreadDeletionTarget,
+                mainPostFallback: threadRoute.mainPostFallback,
+                openUserInParent: { user in
+                    openUser(user, sourceThreadID: threadRoute.threadID)
+                },
+                openForumInParent: openForum
+            )
+            .interactiveNavigationPopStateSync {
+                removeNavigationRouteIfCurrent(route)
+            }
+        case let .forum(id, name, displayName, avatarURL):
+            ForumThreadsView(
+                account: account,
+                forum: Forum(
+                    id: id,
+                    name: name,
+                    displayName: displayName,
+                    avatarURL: avatarURL,
+                    memberCount: 0,
+                    threadCount: 0
+                ),
+                openThreadInParent: { route in
+                    openThreadFromNestedForum(route)
+                },
+                openUserInParent: { user in
+                    openUser(user, sourceThreadID: nil)
+                }
+            )
+            .interactiveNavigationPopStateSync {
+                removeNavigationRouteIfCurrent(route)
+            }
+        case let .user(user, sourceThreadID):
+            UserProfileView(
+                account: account,
+                user: user,
+                sourceThreadID: sourceThreadID,
+                onReturnToSourceThread: {
+                    removeNavigationRouteIfCurrent(route)
+                },
+                openThreadInParent: openThreadFromNestedForum,
+                openForumInParent: openForum
+            )
+            .interactiveNavigationPopStateSync {
+                removeNavigationRouteIfCurrent(route)
+            }
+        }
+    }
+
     private var feedColumn: some View {
         ScrollViewReader { scrollProxy in
             refreshableScrollView {
@@ -98,7 +159,7 @@ struct HomeView: View {
         .navigationTitle("首页")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     activeSearch = SearchRoute(keyword: "")
                 } label: {
@@ -110,68 +171,12 @@ struct HomeView: View {
                 .accessibilityIdentifier("home-search-button")
             }
         }
-        .navigationDestination(isPresented: searchIsActive) {
+        .compatibleNavigationDestination(isPresented: searchIsActive) {
             if let activeSearch {
                 SearchResultsView(account: account, scope: .global, initialKeyword: activeSearch.keyword)
                     .interactiveNavigationPopStateSync {
                         self.activeSearch = nil
                     }
-            }
-        }
-        .navigationDestination(for: HomeNavigationRoute.self) { route in
-            switch route {
-            case let .thread(threadRoute):
-                ThreadDetailView(
-                    account: account,
-                    threadID: threadRoute.threadID,
-                    forumID: threadRoute.forumID,
-                    initialPostID: threadRoute.initialPostID,
-                    initialDestination: threadRoute.initialDestination,
-                    ownThreadDeletionTarget: threadRoute.ownThreadDeletionTarget,
-                    mainPostFallback: threadRoute.mainPostFallback,
-                    openUserInParent: { user in
-                        openUser(user, sourceThreadID: threadRoute.threadID)
-                    },
-                    openForumInParent: openForum
-                )
-                .interactiveNavigationPopStateSync {
-                    removeNavigationRouteIfCurrent(route)
-                }
-            case let .forum(id, name, displayName, avatarURL):
-                ForumThreadsView(
-                    account: account,
-                    forum: Forum(
-                        id: id,
-                        name: name,
-                        displayName: displayName,
-                        avatarURL: avatarURL,
-                        memberCount: 0,
-                        threadCount: 0
-                    ),
-                    openThreadInParent: { route in
-                        openThreadFromNestedForum(route)
-                    },
-                    openUserInParent: { user in
-                        openUser(user, sourceThreadID: nil)
-                    }
-                )
-                .interactiveNavigationPopStateSync {
-                    removeNavigationRouteIfCurrent(route)
-                }
-            case let .user(user, sourceThreadID):
-                UserProfileView(
-                    account: account,
-                    user: user,
-                    sourceThreadID: sourceThreadID,
-                    onReturnToSourceThread: {
-                        removeNavigationRouteIfCurrent(route)
-                    },
-                    openThreadInParent: openThreadFromNestedForum,
-                    openForumInParent: openForum
-                )
-                .interactiveNavigationPopStateSync {
-                    removeNavigationRouteIfCurrent(route)
-                }
             }
         }
         .interactiveNavigationPopRevealSource()
@@ -541,7 +546,7 @@ struct HomeView: View {
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
         }
-        .scrollBounceBehavior(.always, axes: .vertical)
+        .compatibleAlwaysVerticalBounce()
         .accessibilityIdentifier("home-feed-scroll-view")
         .shortPullRefresh(
             isEnabled: didLoad && isLoading == false,

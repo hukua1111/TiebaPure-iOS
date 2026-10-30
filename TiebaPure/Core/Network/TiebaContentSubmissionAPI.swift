@@ -773,7 +773,7 @@ enum TiebaContentSubmissionRequestFactory {
         account: Account,
         forumName: String
     ) throws -> [String: String] {
-        var referer = URLComponents(url: TiebaEndpoint.base.appending(path: "/f"), resolvingAgainstBaseURL: false)
+        var referer = URLComponents(url: TiebaEndpoint.base.compatibleAppending(path: "/f"), resolvingAgainstBaseURL: false)
         referer?.queryItems = [.init(name: "kw", value: forumName)]
         return try webMutationHeaders(
             account: account,

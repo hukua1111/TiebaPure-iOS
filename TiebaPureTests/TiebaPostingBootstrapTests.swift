@@ -477,7 +477,7 @@ private actor BlockingPostingBootstrapTransport: TiebaPostingBootstrapTransport 
 
     func data(for request: URLRequest, maximumBytes: Int) async throws -> (Data, HTTPURLResponse) {
         starts += 1
-        try await Task.sleep(for: .seconds(30))
+        try await Task.sleep(nanoseconds: 30_000_000_000)
         throw PostingBootstrapFixtureError.unexpectedRequest
     }
 
@@ -498,11 +498,11 @@ private final class LockedRandomBytes: @unchecked Sendable {
     }
 
     var callCount: Int {
-        lock.withLock { count }
+        lock.withCompatibleLock { count }
     }
 
     func bytes(count requestedCount: Int) throws -> Data {
-        lock.withLock { count += 1 }
+        lock.withCompatibleLock { count += 1 }
         guard value.count == requestedCount else {
             throw TiebaPostingBootstrapError.randomGenerationFailed
         }
@@ -515,7 +515,7 @@ private final class LockedFixtureState: @unchecked Sendable {
     private var hasReturnedSyncSuccess = false
 
     func consumeSyncSuccess() -> Bool {
-        lock.withLock {
+        lock.withCompatibleLock {
             guard hasReturnedSyncSuccess == false else { return false }
             hasReturnedSyncSuccess = true
             return true
@@ -599,20 +599,20 @@ private final class PostingBootstrapURLProtocol: URLProtocol {
         private var storedHandler: Handler?
 
         var paths: [String] {
-            lock.withLock { recordedPaths }
+            lock.withCompatibleLock { recordedPaths }
         }
 
         var handler: Handler? {
-            get { lock.withLock { storedHandler } }
-            set { lock.withLock { storedHandler = newValue } }
+            get { lock.withCompatibleLock { storedHandler } }
+            set { lock.withCompatibleLock { storedHandler = newValue } }
         }
 
         func record(path: String) {
-            lock.withLock { recordedPaths.append(path) }
+            lock.withCompatibleLock { recordedPaths.append(path) }
         }
 
         func reset() {
-            lock.withLock {
+            lock.withCompatibleLock {
                 recordedPaths = []
                 storedHandler = nil
             }

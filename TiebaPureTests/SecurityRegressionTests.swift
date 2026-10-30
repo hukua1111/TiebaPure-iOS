@@ -768,14 +768,14 @@ private final class InMemoryKeychainSecurityOperations: KeychainSecurityOperatin
     private var recordedCalls: [Call] = []
 
     var calls: [Call] {
-        lock.withLock { recordedCalls }
+        lock.withCompatibleLock { recordedCalls }
     }
 
     func copyMatching(
         _ query: CFDictionary,
         result: UnsafeMutablePointer<CFTypeRef?>?
     ) -> OSStatus {
-        lock.withLock {
+        lock.withCompatibleLock {
             recordedCalls.append(.copy)
             guard let storedData else { return errSecItemNotFound }
             result?.pointee = storedData as CFData
@@ -784,7 +784,7 @@ private final class InMemoryKeychainSecurityOperations: KeychainSecurityOperatin
     }
 
     func update(_ query: CFDictionary, attributes: CFDictionary) -> OSStatus {
-        lock.withLock {
+        lock.withCompatibleLock {
             recordedCalls.append(.update)
             guard storedData != nil else { return errSecItemNotFound }
             guard let data = (attributes as NSDictionary)[kSecValueData] as? Data else {
@@ -796,7 +796,7 @@ private final class InMemoryKeychainSecurityOperations: KeychainSecurityOperatin
     }
 
     func add(_ attributes: CFDictionary) -> OSStatus {
-        lock.withLock {
+        lock.withCompatibleLock {
             recordedCalls.append(.add)
             guard storedData == nil else { return errSecDuplicateItem }
             guard let data = (attributes as NSDictionary)[kSecValueData] as? Data else {
@@ -808,7 +808,7 @@ private final class InMemoryKeychainSecurityOperations: KeychainSecurityOperatin
     }
 
     func delete(_ query: CFDictionary) -> OSStatus {
-        lock.withLock {
+        lock.withCompatibleLock {
             recordedCalls.append(.delete)
             let status: OSStatus = storedData == nil ? errSecItemNotFound : errSecSuccess
             storedData = nil
@@ -849,23 +849,23 @@ private final class SecurityURLProtocol: URLProtocol {
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     static var startCount: Int {
-        metricsLock.withLock { recordedStartCount }
+        metricsLock.withCompatibleLock { recordedStartCount }
     }
 
     static var stopCount: Int {
-        metricsLock.withLock { recordedStopCount }
+        metricsLock.withCompatibleLock { recordedStopCount }
     }
 
     static var lastRequestMethod: String? {
-        metricsLock.withLock { recordedLastRequestMethod }
+        metricsLock.withCompatibleLock { recordedLastRequestMethod }
     }
 
     static var lastRangeHeader: String? {
-        metricsLock.withLock { recordedLastRangeHeader }
+        metricsLock.withCompatibleLock { recordedLastRangeHeader }
     }
 
     static func resetMetrics() {
-        metricsLock.withLock {
+        metricsLock.withCompatibleLock {
             recordedStartCount = 0
             recordedStopCount = 0
             recordedLastRequestMethod = nil
@@ -874,7 +874,7 @@ private final class SecurityURLProtocol: URLProtocol {
     }
 
     override func startLoading() {
-        Self.metricsLock.withLock {
+        Self.metricsLock.withCompatibleLock {
             Self.recordedStartCount += 1
             Self.recordedLastRequestMethod = request.httpMethod
             Self.recordedLastRangeHeader = request.value(forHTTPHeaderField: "Range")
@@ -914,7 +914,7 @@ private final class SecurityURLProtocol: URLProtocol {
     }
 
     override func stopLoading() {
-        Self.metricsLock.withLock { Self.recordedStopCount += 1 }
+        Self.metricsLock.withCompatibleLock { Self.recordedStopCount += 1 }
         stateLock.lock()
         stopped = true
         let items = workItems

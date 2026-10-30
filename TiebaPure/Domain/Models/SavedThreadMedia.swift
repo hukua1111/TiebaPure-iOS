@@ -87,14 +87,14 @@ final class SavedThreadMediaAuthorization: @unchecked Sendable {
 
     func register(rootURL: URL) {
         let path = rootURL.resolvingSymlinksInPath().standardizedFileURL.path
-        _ = lock.withLock { rootPaths.insert(path) }
+        _ = lock.withCompatibleLock { rootPaths.insert(path) }
     }
 
     func allows(_ url: URL?) -> Bool {
         guard let url, url.isFileURL else { return false }
         let resolved = url.resolvingSymlinksInPath().standardizedFileURL
         let path = resolved.path
-        let roots = lock.withLock { rootPaths }
+        let roots = lock.withCompatibleLock { rootPaths }
         guard roots.contains(where: { path.hasPrefix($0 + "/") }) else { return false }
         do {
             let values = try resolved.resourceValues(forKeys: [
@@ -148,7 +148,7 @@ final class PreparedSavedThreadMedia: @unchecked Sendable {
     }
 
     func commit() throws {
-        try lock.withLock {
+        try lock.withCompatibleLock {
             guard state == .prepared else { return }
             hadPreviousDirectory = fileManager.fileExists(atPath: finalURL.path)
             if hadPreviousDirectory {
@@ -175,7 +175,7 @@ final class PreparedSavedThreadMedia: @unchecked Sendable {
     }
 
     func finish() {
-        lock.withLock {
+        lock.withCompatibleLock {
             guard state == .committed else { return }
             if fileManager.fileExists(atPath: rollbackURL.path) {
                 try? fileManager.removeItem(at: rollbackURL)
@@ -185,7 +185,7 @@ final class PreparedSavedThreadMedia: @unchecked Sendable {
     }
 
     func rollback() {
-        lock.withLock {
+        lock.withCompatibleLock {
             switch state {
             case .prepared:
                 if fileManager.fileExists(atPath: stagingURL.path) {

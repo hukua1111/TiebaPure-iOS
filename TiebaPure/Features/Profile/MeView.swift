@@ -9,7 +9,7 @@ struct MeView: View {
     @State private var navigationPath: [MeNavigationRoute] = []
 
     var body: some View {
-        NavigationStack(path: $navigationPath) {
+        CompatibleNavigationStack(path: $navigationPath) {
             Form {
                 if let account {
                     Section("账号") {
@@ -163,32 +163,31 @@ struct MeView: View {
             }
             .navigationTitle("我的")
             .interactiveNavigationPopRevealSource()
-            .navigationDestination(for: MeNavigationRoute.self) { route in
-                destination(for: route)
-            }
-            .sheet(isPresented: $showsLogin) {
-                NavigationStack {
-                    LoginView()
-                        .navigationTitle("手机号验证码登录")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
-                                Button("关闭") {
-                                    showsLogin = false
-                                }
+        } destination: { route in
+            destination(for: route)
+        }
+        .sheet(isPresented: $showsLogin) {
+            CompatibleNavigationContainer {
+                LoginView()
+                    .navigationTitle("手机号验证码登录")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button("关闭") {
+                                showsLogin = false
                             }
                         }
-                }
-            }
-            .onChange(of: account?.id) { newValue in
-                if newValue != nil {
-                    showsLogin = false
-                } else {
-                    navigationPath = []
-                }
+                    }
             }
         }
-        .toolbar(.visible, for: .tabBar)
+        .onChange(of: account?.id) { newValue in
+            if newValue != nil {
+                showsLogin = false
+            } else {
+                navigationPath = []
+            }
+        }
+        .compatibleTabBarVisibility(.visible)
     }
 
     private var browsingHistoryAccessibilityLabel: String {

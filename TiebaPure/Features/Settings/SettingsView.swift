@@ -65,7 +65,7 @@ struct SettingsView: View {
                 .accessibilityHint("关闭后仍会显示点赞数量，但不能点赞或取消点赞")
                 .accessibilityIdentifier("settings-likes-enabled-toggle")
 
-                NavigationLink {
+                CompatibleNavigationLink {
                     ReadingSettingsView()
                 } label: {
                     Label("阅读设置", systemImage: "textformat.size")
@@ -73,7 +73,7 @@ struct SettingsView: View {
                 .accessibilityHint("调整帖子正文、回复排序和媒体加载方式")
                 .accessibilityIdentifier("settings-reading-entry")
 
-                NavigationLink {
+                CompatibleNavigationLink {
                     SavedThreadsView(account: account)
                 } label: {
                     Label("本地保存的帖子", systemImage: "internaldrive")
@@ -81,7 +81,7 @@ struct SettingsView: View {
                 .accessibilityHint("查看和管理保存在这台设备上的完整帖子快照")
                 .accessibilityIdentifier("settings-saved-threads-entry")
 
-                NavigationLink {
+                CompatibleNavigationLink {
                     BlocklistSettingsView()
                 } label: {
                     Label("屏蔽设置", systemImage: "hand.raised")

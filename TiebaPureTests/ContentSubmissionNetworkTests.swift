@@ -1452,7 +1452,7 @@ final class ContentSubmissionNetworkIntegrationTests: XCTestCase {
     private func waitForRequest(path: String, id: String) async throws {
         for _ in 0..<200 {
             if SubmissionURLProtocol.count(path: path, id: id) == 1 { return }
-            try await Task.sleep(for: .milliseconds(5))
+            try await Task.sleep(nanoseconds: 5_000_000)
         }
         XCTFail("Timed out waiting for \(path)")
     }

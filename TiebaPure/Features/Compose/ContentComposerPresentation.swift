@@ -161,7 +161,7 @@ struct ContentComposerPresentation: View {
     private func draftStateNavigation<Content: View>(
         @ViewBuilder content: () -> Content
     ) -> some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             content()
                 .background(Color(uiColor: .systemGroupedBackground))
                 .navigationTitle("发布内容")

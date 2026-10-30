@@ -179,11 +179,11 @@ actor TiebaImagePipeline {
         private var cancelled = false
 
         func markCancelled() {
-            lock.withLock { cancelled = true }
+            lock.withCompatibleLock { cancelled = true }
         }
 
         var isCancelled: Bool {
-            lock.withLock { cancelled }
+            lock.withCompatibleLock { cancelled }
         }
     }
 

@@ -1,5 +1,4 @@
 import ImageIO
-import PhotosUI
 import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
@@ -16,7 +15,6 @@ struct ContentComposerView: View {
     @State private var bodyText: String
     @State private var attachments: [ContentSubmissionImage]
     @State private var savedSnapshot: ContentComposerSnapshot
-    @State private var photoSelection: [PhotosPickerItem] = []
     @State private var photoLoadingTask: Task<Void, Never>?
     @State private var photoLoadProgress: (completed: Int, total: Int)?
     @State private var attachmentErrorMessage: String?
@@ -59,7 +57,7 @@ struct ContentComposerView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     Text(target.prompt)
@@ -83,7 +81,7 @@ struct ContentComposerView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 20)
             }
-            .scrollDismissesKeyboard(.interactively)
+            .compatibleInteractiveKeyboardDismissal()
             .accessibilityIdentifier("content-composer-scroll-view")
             .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle(target.kind.navigationTitle)
@@ -132,9 +130,6 @@ struct ContentComposerView: View {
                 onDismissed: onCancel
             )
         }
-        .compatibleOnChange(of: photoSelection) { _, newValue in
-            preparePhotoSelection(newValue)
-        }
         .onDisappear {
             photoLoadingTask?.cancel()
         }
@@ -152,10 +147,9 @@ struct ContentComposerView: View {
                 )
             }
 
-            TextField("请输入帖子标题", text: $title, axis: .vertical)
+            titleField
                 .textFieldStyle(.plain)
                 .font(.body)
-                .lineLimit(1...3)
                 .focused($focusedField, equals: .title)
                 .submitLabel(.next)
                 .onSubmit { focusedField = .body }
@@ -169,6 +163,18 @@ struct ContentComposerView: View {
                         .stroke(Color(uiColor: .separator), lineWidth: 0.5)
                 }
                 .accessibilityLabel("帖子标题")
+        }
+    }
+
+    /// iOS 16 can grow a `TextField` over several lines. iOS 15 has no
+    /// vertical-axis text field, so the title stays a single line there.
+    @ViewBuilder
+    private var titleField: some View {
+        if #available(iOS 16.0, *) {
+            TextField("请输入帖子标题", text: $title, axis: .vertical)
+                .lineLimit(1...3)
+        } else {
+            TextField("请输入帖子标题", text: $title)
         }
     }
 
@@ -196,7 +202,7 @@ struct ContentComposerView: View {
                 TextEditor(text: $bodyText)
                     .font(.body)
                     .focused($focusedField, equals: .body)
-                    .scrollContentBackground(.hidden)
+                    .compatibleHiddenScrollContentBackground()
                     .padding(.horizontal, 8)
                     .padding(.vertical, 6)
                     .frame(minHeight: max(editorMinimumHeight, 132))
@@ -247,7 +253,7 @@ struct ContentComposerView: View {
                 }
                 .padding(.vertical, 2)
             }
-            .scrollIndicators(.hidden)
+            .compatibleHiddenScrollIndicators()
         }
     }
 
@@ -284,7 +290,7 @@ struct ContentComposerView: View {
                 }
                 .padding(.vertical, 2)
             }
-            .scrollIndicators(.hidden)
+            .compatibleHiddenScrollIndicators()
             .frame(height: 98)
         }
     }
@@ -356,14 +362,14 @@ struct ContentComposerView: View {
     }
 
     private var actionBar: some View {
-        ViewThatFits(in: .horizontal) {
+        CompatibleViewThatFits(in: .horizontal) {
             HStack(spacing: 4) {
                 mediaButton
                 emoticonButton
                 Spacer(minLength: 8)
                 draftButton
             }
-
+        } fallback: {
             VStack(spacing: 4) {
                 HStack(spacing: 4) {
                     mediaButton
@@ -393,18 +399,16 @@ struct ContentComposerView: View {
         if target.kind == .newThread {
             EmptyView()
         } else if remaining > 0 {
-            PhotosPicker(
-                selection: $photoSelection,
-                maxSelectionCount: remaining,
-                matching: .images,
-                preferredItemEncoding: .current
+            CompatibleImagePickerButton(
+                selectionLimit: remaining,
+                isDisabled: isBusy || photoLoadProgress != nil,
+                onPick: preparePhotoSelection
             ) {
                 Label("图片", systemImage: "photo.on.rectangle.angled")
                     .frame(minHeight: 44)
                     .padding(.horizontal, 8)
                     .contentShape(Rectangle())
             }
-            .disabled(isBusy || photoLoadProgress != nil)
             .accessibilityHint("还可添加 \(remaining) 张")
         } else {
             Label("图片", systemImage: "photo.on.rectangle.angled")
@@ -582,7 +586,7 @@ struct ContentComposerView: View {
         onCancel()
     }
 
-    private func preparePhotoSelection(_ selection: [PhotosPickerItem]) {
+    private func preparePhotoSelection(_ selection: [CompatiblePickedPhoto]) {
         guard selection.isEmpty == false else { return }
         photoLoadingTask?.cancel()
 
@@ -591,7 +595,6 @@ struct ContentComposerView: View {
             kind: target.kind
         )
         let items = Array(selection.prefix(remaining))
-        photoSelection = []
         guard items.isEmpty == false else { return }
 
         attachmentErrorMessage = nil
@@ -603,9 +606,7 @@ struct ContentComposerView: View {
             for (index, item) in items.enumerated() {
                 guard Task.isCancelled == false else { return }
                 do {
-                    guard let data = try await item.loadTransferable(type: Data.self) else {
-                        throw ContentSubmissionValidationError.invalidImage
-                    }
+                    let data = try await item.loadData()
                     let image = try await Task.detached(priority: .userInitiated) {
                         try ContentComposerImageDecoder.decode(data)
                     }.value

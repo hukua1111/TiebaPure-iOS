@@ -93,7 +93,7 @@ struct ForumListView: View {
         .background(TiebaPureTheme.ColorToken.readerGroupedBackground)
         .navigationTitle("关注的吧")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: selectedForumIsActive) {
+        .compatibleNavigationDestination(isPresented: selectedForumIsActive) {
             if let selectedForum {
                 ForumThreadsView(account: account, forum: selectedForum.forum)
                     .interactiveNavigationPopStateSync {
@@ -125,8 +125,8 @@ struct ForumListView: View {
             self.selectedForum = nil
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                CompatibleNavigationLink {
                     SettingsView(account: account)
                 } label: {
                     Image(systemName: "gearshape")

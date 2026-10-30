@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-GPL--3.0--only-blue)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/infinityf4p/TiebaPure-iOS)](https://github.com/infinityf4p/TiebaPure-iOS/releases/latest)
 
-基于 SwiftUI 的第三方百度贴吧客户端，支持 iOS 16.4 及更高版本。
+基于 SwiftUI 的第三方百度贴吧客户端，支持 iOS 15.0 及更高版本。
 
 ## 截图
 
@@ -50,7 +50,9 @@
 
 ## 构建
 
-已验证的开发环境为 Xcode 26.6、iOS 16.4 与 iOS 26.5 模拟器和 XcodeGen 2.45.x；App 最低支持 iOS 16.4。
+已验证的开发环境为 Xcode 26.6、iOS 26.5 模拟器和 XcodeGen 2.45.x；App 最低支持 iOS 15.0。
+
+iOS 15 缺少 `NavigationStack`、`NavigationSplitView`、`PhotosPicker`、SwiftData、`Duration` 等系统能力，相关位置统一走 `TiebaPure/Core/UI/Compatible*.swift` 里的兼容实现：iOS 16 及以上仍使用系统 API，iOS 15 回退到等价的旧接口，本地存储则回退到加密文件后端。
 
 ```bash
 xcodegen generate --spec project.yml
@@ -60,6 +62,20 @@ xcodegen generate --spec project.yml
 xcodebuild -project TiebaPure.xcodeproj -scheme TiebaPure \
   -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' build
 ```
+
+## 打包未签名 IPA
+
+在 macOS 上，仓库自带一条命令完成 Release 归档与打包：
+
+```bash
+xcodegen generate --spec project.yml   # 让 TiebaPure.xcodeproj 与 project.yml 保持一致
+scripts/package-unsigned-ipa.sh
+# 产物：build/TiebaPure-unsigned.ipa
+```
+
+脚本会先用 XcodeGen 校验 `TiebaPure.xcodeproj` 与 `project.yml` 一致（不一致直接失败，可用 `TIEBAPURE_SKIP_XCODEGEN_CHECK=1` 跳过），再以 `CODE_SIGNING_ALLOWED=NO` 归档，最后剥离 `_CodeSignature` 与 `embedded.mobileprovision` 打 `Payload/` 包。产物是 **未签名** IPA，安装前需要用你自己的证书（如 Sideloadly、AltStore、TrollStore 或自签工具）重新签名。
+
+没有 macOS 环境时，可在 GitHub Actions 里手动触发 **Package unsigned IPA** 工作流，完成后从该次运行的 Artifacts 下载 `TiebaPure-unsigned-ipa`（zip 内的 `.ipa`）。
 
 ## 开源许可
 

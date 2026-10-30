@@ -46,7 +46,7 @@ struct BrowsingHistoryView: View {
         )
         .toolbar {
             if isEditing {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button(allVisibleEntriesAreSelected ? "取消全选" : "全选") {
                         selectedThreadIDs = LocalThreadListSelectionPolicy
                             .selectionByTogglingAll(
@@ -60,7 +60,7 @@ struct BrowsingHistoryView: View {
             }
 
             if isEditing == false, historyStore.items.isEmpty == false {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button("清空") {
                         showsClearConfirmation = true
                     }
@@ -71,7 +71,7 @@ struct BrowsingHistoryView: View {
             }
 
             if visibleEntries.isEmpty == false || isEditing {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
                         .minTouchTarget()
                         .accessibilityIdentifier("browsing-history-edit")
@@ -82,7 +82,7 @@ struct BrowsingHistoryView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             selectionBar
         }
-        .navigationDestination(isPresented: entryIsActive) {
+        .compatibleNavigationDestination(isPresented: entryIsActive) {
             if let activeEntry {
                 ThreadDetailView(
                     account: account,

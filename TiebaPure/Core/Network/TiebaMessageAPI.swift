@@ -50,9 +50,9 @@ enum TiebaMessageEndpoint {
     var url: URL {
         switch self {
         case .replyMe:
-            return TiebaEndpoint.appBase.appending(path: "/c/u/feed/replyme")
+            return TiebaEndpoint.appBase.compatibleAppending(path: "/c/u/feed/replyme")
         case .atMe:
-            return TiebaEndpoint.appBase.appending(path: "/c/u/feed/atme")
+            return TiebaEndpoint.appBase.compatibleAppending(path: "/c/u/feed/atme")
         }
     }
 }

@@ -67,7 +67,7 @@ final class TiebaVideoFileLease: @unchecked Sendable {
     }
 
     func release() {
-        let shouldRemove = lock.withLock { () -> Bool in
+        let shouldRemove = lock.withCompatibleLock { () -> Bool in
             guard isReleased == false else { return false }
             isReleased = true
             return true

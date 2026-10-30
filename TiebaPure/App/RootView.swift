@@ -260,7 +260,7 @@ private struct ExternalRouteView: View {
     let onClose: () -> Void
 
     var body: some View {
-        NavigationStack {
+        CompatibleNavigationContainer {
             Group {
                 switch route {
                 case let .thread(id, postID):
@@ -277,7 +277,7 @@ private struct ExternalRouteView: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("关闭", action: onClose)
                         .accessibilityIdentifier("external-route-close")
                 }

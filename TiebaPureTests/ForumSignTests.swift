@@ -347,7 +347,7 @@ final class ForumSignTests: XCTestCase {
             await coordinator.signAllFollowedForums(account: account)
         }
 
-        try await Task.sleep(for: .milliseconds(100))
+        try await Task.sleep(nanoseconds: 100_000_000)
         await coordinator.beginInvalidation(session: account.sessionIdentity)
         let summary = await run.value
 
@@ -394,7 +394,7 @@ final class ForumSignTests: XCTestCase {
         let run = Task { @MainActor in
             await coordinator.signAllFollowedForums(account: account)
         }
-        try await Task.sleep(for: .milliseconds(100))
+        try await Task.sleep(nanoseconds: 100_000_000)
 
         try await logout.logOut()
         let summary = await run.value

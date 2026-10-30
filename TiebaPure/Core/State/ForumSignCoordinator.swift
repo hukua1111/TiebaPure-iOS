@@ -14,7 +14,7 @@ final class ForumSignCoordinator: ObservableObject {
 
     private let api: any TiebaAPIService
     private let settings: ForumSignSettingsStore
-    private let requestSpacing: Duration
+    private let requestSpacing: TimeInterval
     private struct RunOutcome {
         let summary: ForumSignRunSummary
         let errorMessage: String?
@@ -34,7 +34,7 @@ final class ForumSignCoordinator: ObservableObject {
     init(
         api: any TiebaAPIService,
         settings: ForumSignSettingsStore,
-        requestSpacing: Duration = .milliseconds(350)
+        requestSpacing: TimeInterval = 0.35
     ) {
         self.api = api
         self.settings = settings
@@ -65,7 +65,9 @@ final class ForumSignCoordinator: ObservableObject {
                 try Task.checkCancellation()
                 for (index, forum) in forums.enumerated() {
                     if index > 0 {
-                        try await Task.sleep(for: requestSpacing)
+                        try await Task.sleep(
+                            nanoseconds: CompatibleTaskDelay.nanoseconds(for: requestSpacing)
+                        )
                     }
                     do {
                         try Task.checkCancellation()

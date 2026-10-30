@@ -151,7 +151,7 @@ struct UserRelationshipsView: View {
         }
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: selectedUserIsActive) {
+        .compatibleNavigationDestination(isPresented: selectedUserIsActive) {
             if let selectedUser {
                 UserProfileView(account: account, user: selectedUser)
                     .interactiveNavigationPopStateSync {
