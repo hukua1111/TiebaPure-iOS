@@ -78,11 +78,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="ios15-preview"
-          if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" "$IPA_PATH" --clobber
-          else
-            gh release create "$tag" "$IPA_PATH" \
-              --title "iOS 15 预览构建" \
-              --notes "由 $(git rev-parse --short HEAD) 构建的未签名 IPA（iOS 15.0+），安装前需自行重签。" \
-              --prerelease
-          fi
+          note="由 $(git rev-parse --short HEAD) 构建的未签名 IPA（iOS 15.0+），安装前需自行重签。"
+          # The release API occasionally answers 5xx; the artifact above is
+          # already uploaded, so retry before failing the job.
+          for attempt in 1 2 3 4 5; do
+            if gh release view "$tag" >/dev/null 2>&1; then
+              if gh release upload "$tag" "$IPA_PATH" --clobber; then
+                echo "uploaded to $tag"
+                exit 0
+              fi
+            elif gh release create "$tag" "$IPA_PATH" \
+              --title "iOS 15 预览构建" --notes "$note" --prerelease; then
+              echo "created $tag"
+              exit 0
+            fi
+            echo "attempt $attempt failed, retrying"
+            sleep $((attempt * 10))
+          done
+          echo "::error::could not attach the IPA to the $tag release"
+          exit 1
