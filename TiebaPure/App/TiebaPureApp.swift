@@ -8,6 +8,10 @@ struct TiebaPureApp: App {
     @StateObject private var readingPreferencesStore = ReadingPreferencesStore.live()
     @StateObject private var readerFontStore = ReaderFontStore.shared
 
+    init() {
+        CompatibleAppearanceBootstrap.applyIfNeeded()
+    }
+
     var body: some Scene {
         WindowGroup {
             Group {

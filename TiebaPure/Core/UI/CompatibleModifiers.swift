@@ -398,6 +398,24 @@ extension View {
     }
 }
 
+// MARK: - Appearance
+
+/// iOS 15 leaves `UITabBar.scrollEdgeAppearance` transparent, so the tab bar
+/// drops its material as soon as a screen scrolls under it, while the tab bar on
+/// a list that does not reach the edge keeps the blur. Pinning both appearances
+/// to the default (blurred) background makes the bar look the same on every
+/// screen. iOS 16 and newer manage this themselves and are left untouched.
+enum CompatibleAppearanceBootstrap {
+    static func applyIfNeeded() {
+        guard #unavailable(iOS 16.0) else { return }
+
+        let appearance = UITabBarAppearance()
+        appearance.configureWithDefaultBackground()
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
+    }
+}
+
 // MARK: - Shapes
 
 /// Top-only rounded corners, which `UnevenRoundedRectangle` provides from iOS 16
