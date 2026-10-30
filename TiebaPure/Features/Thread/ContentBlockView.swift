@@ -1028,7 +1028,9 @@ enum InlineContentTextMeasurementCache {
 
     /// Returns `text` unchanged when it is already immutable, so the ordinary
     /// sizing path does not pay for a copy of the paragraph.
-    static func immutableSnapshot(of text: NSAttributedString) -> NSAttributedString {
+    nonisolated static func immutableSnapshot(
+        of text: NSAttributedString
+    ) -> NSAttributedString {
         guard text is NSMutableAttributedString else { return text }
         return text.copy() as? NSAttributedString ?? NSAttributedString(attributedString: text)
     }
