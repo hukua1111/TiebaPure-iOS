@@ -21,6 +21,10 @@ struct SubpostPreviewView: View {
         self.onOpenUser = onOpenUser
     }
 
+    private var showsOpenAllRow: Bool {
+        totalCount > subposts.count && onOpenAll != nil
+    }
+
     var body: some View {
         if subposts.isEmpty == false {
             VStack(alignment: .leading, spacing: SubpostPreviewLayout.openAllTopSpacing) {
@@ -35,7 +39,7 @@ struct SubpostPreviewView: View {
                     }
                 }
 
-                if totalCount > subposts.count, let onOpenAll {
+                if showsOpenAllRow, let onOpenAll {
                     Button {
                         onOpenAll()
                     } label: {
@@ -46,24 +50,32 @@ struct SubpostPreviewView: View {
                         }
                         .font(.footnote)
                         .foregroundStyle(TiebaPureTheme.ColorToken.primaryAccent)
+                        // The row is a full 44pt target rather than a 30pt label
+                        // with an expanded hit shape: a hit shape that reaches
+                        // outside the frame is not reliably delivered, and the
+                        // label has no background, so the extra height only adds
+                        // tap area around the text.
                         .frame(
                             maxWidth: .infinity,
-                            minHeight: SubpostPreviewLayout.openAllVisualMinHeight,
+                            minHeight: SubpostPreviewLayout.openAllRowHeight,
                             alignment: .leading
                         )
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .contentShape(
-                        .interaction,
-                        Rectangle().inset(by: -SubpostPreviewLayout.openAllHitExpansion)
-                    )
                     .accessibilityLabel("查看全部\(totalCount)条回复")
+                    .accessibilityIdentifier("thread-subpost-open-all")
                 }
             }
             .padding(.horizontal, TiebaPureTheme.Spacing.sm)
             .padding(.top, ThreadReplyLayout.previewTopPadding)
-            .padding(.bottom, ThreadReplyLayout.previewBottomPadding)
+            // The 44pt row already separates the text from the card's edge, so
+            // the card does not also need the usual padding below it. Cards
+            // without the row keep the original spacing.
+            .padding(
+                .bottom,
+                showsOpenAllRow ? 0 : ThreadReplyLayout.previewBottomPadding
+            )
             .background(
                 RoundedRectangle(cornerRadius: TiebaPureTheme.Radius.media, style: .continuous)
                     .fill(TiebaPureTheme.ColorToken.readerTertiarySurface)
@@ -77,9 +89,9 @@ struct SubpostPreviewView: View {
 enum SubpostPreviewLayout {
     static let rowSpacing: CGFloat = TiebaPureTheme.Spacing.xs
     static let openAllTopSpacing: CGFloat = TiebaPureTheme.Spacing.xxs
-    static let openAllVisualMinHeight: CGFloat = 30
-    static let openAllHitHeight: CGFloat = 36
-    static let openAllHitExpansion = (openAllHitHeight - openAllVisualMinHeight) / 2
+    /// The smallest comfortable tap target. The label itself is only a 13pt
+    /// line, so the row is laid out at this height with the text centred.
+    static let openAllRowHeight: CGFloat = 44
 }
 
 struct SubpostInlineRow: View {

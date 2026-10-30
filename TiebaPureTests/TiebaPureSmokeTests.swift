@@ -3340,26 +3340,21 @@ final class TiebaPureSmokeTests: XCTestCase {
         XCTAssertEqual(ThreadPostMetadataText.firstLocation("  ", nil, "广东"), "广东")
     }
 
-    func testSubpostOpenAllUsesCompactVisualAndHitHeights() {
+    func testSubpostOpenAllRowMeetsMinimumTapTarget() {
         XCTAssertEqual(SubpostPreviewLayout.rowSpacing, 8)
         XCTAssertEqual(SubpostPreviewLayout.openAllTopSpacing, 4)
         XCTAssertGreaterThan(
             SubpostPreviewLayout.rowSpacing,
             SubpostPreviewLayout.openAllTopSpacing
         )
-        XCTAssertEqual(SubpostPreviewLayout.openAllVisualMinHeight, 30)
-        XCTAssertEqual(
-            SubpostPreviewLayout.openAllVisualMinHeight / 44,
-            2.0 / 3.0,
-            accuracy: 0.02
+        // The label is a single footnote line, so the row has to provide the
+        // whole tap target itself.
+        XCTAssertGreaterThanOrEqual(
+            SubpostPreviewLayout.openAllRowHeight,
+            44,
+            "查看全部回复的行高就是点击热区，必须达到 44pt"
         )
-        XCTAssertEqual(
-            SubpostPreviewLayout.openAllVisualMinHeight
-                + SubpostPreviewLayout.openAllHitExpansion * 2,
-            SubpostPreviewLayout.openAllHitHeight
-        )
-        XCTAssertEqual(SubpostPreviewLayout.openAllHitHeight, 36)
-        XCTAssertLessThan(SubpostPreviewLayout.openAllHitHeight, 44)
+        XCTAssertEqual(SubpostPreviewLayout.openAllRowHeight, 44)
     }
 
     func testSubpostSheetTitle() {
