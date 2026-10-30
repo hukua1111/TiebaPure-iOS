@@ -519,6 +519,7 @@ final class InlineContentTextView: UITextView {
     private var cachedFittingDisplayScale: CGFloat = 0
     private var cachedFittingSize: CGSize = .zero
     private var lastIntrinsicContentWidth: CGFloat = 0
+    private var isMeasuringIntrinsicSize = false
 
     init() {
         // Let UITextView own its single live TextKit stack. Supplying a custom
@@ -674,6 +675,7 @@ final class InlineContentTextView: UITextView {
         }
         if needsLayoutInvalidation {
             invalidateLiveLayout()
+            invalidateIntrinsicSizeIfNeeded()
         }
     }
 
@@ -818,6 +820,11 @@ final class InlineContentTextView: UITextView {
         normalizeContentOffsetIfTextSelectionIsInactive()
     }
 
+    private func invalidateIntrinsicSizeIfNeeded() {
+        guard #unavailable(iOS 16.0), isMeasuringIntrinsicSize == false else { return }
+        invalidateIntrinsicContentSize()
+    }
+
     override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
         guard super.point(inside: point, with: event), isSelectable else {
             return false
@@ -876,9 +883,6 @@ final class InlineContentTextView: UITextView {
         )
         setNeedsLayout()
         setNeedsDisplay()
-        if #unavailable(iOS 16.0) {
-            invalidateIntrinsicContentSize()
-        }
     }
 
     // MARK: - iOS 15 sizing
@@ -889,6 +893,13 @@ final class InlineContentTextView: UITextView {
     /// width SwiftUI proposed, memoized by `fittingSize`.
     override var intrinsicContentSize: CGSize {
         guard #unavailable(iOS 16.0) else { return super.intrinsicContentSize }
+        // `fittingSize` applies the text and reconfigures the container, which
+        // invalidates layout. Re-entering here would schedule another pass from
+        // inside the current one and spin the main thread until the watchdog
+        // kills the app, so a nested query returns the memoized value instead.
+        guard isMeasuringIntrinsicSize == false else { return cachedFittingSize }
+        isMeasuringIntrinsicSize = true
+        defer { isMeasuringIntrinsicSize = false }
         let width = bounds.width
         guard width > 0, textStorage.length > 0 else {
             return CGSize(width: UIView.noIntrinsicMetric, height: 0)

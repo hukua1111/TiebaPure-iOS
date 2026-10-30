@@ -400,19 +400,30 @@ extension View {
 
 // MARK: - Appearance
 
-/// iOS 15 leaves `UITabBar.scrollEdgeAppearance` transparent, so the tab bar
-/// drops its material as soon as a screen scrolls under it, while the tab bar on
-/// a list that does not reach the edge keeps the blur. Pinning both appearances
-/// to the default (blurred) background makes the bar look the same on every
-/// screen. iOS 16 and newer manage this themselves and are left untouched.
+/// iOS 15 leaves the scroll-edge appearances of `UITabBar` and `UINavigationBar`
+/// transparent, so both bars drop their material as soon as content scrolls
+/// under them while a screen that does not reach the edge keeps the blur.
+/// Pinning every appearance to the default (blurred) background makes the chrome
+/// look the same everywhere. iOS 16 and newer manage this themselves and are
+/// left untouched.
 enum CompatibleAppearanceBootstrap {
     static func applyIfNeeded() {
         guard #unavailable(iOS 16.0) else { return }
 
-        let appearance = UITabBarAppearance()
-        appearance.configureWithDefaultBackground()
-        UITabBar.appearance().standardAppearance = appearance
-        UITabBar.appearance().scrollEdgeAppearance = appearance
+        let tabBar = UITabBarAppearance()
+        tabBar.configureWithDefaultBackground()
+        UITabBar.appearance().standardAppearance = tabBar
+        UITabBar.appearance().scrollEdgeAppearance = tabBar
+
+        // The navigation bar has the same problem at the top edge: iOS 15 makes
+        // it transparent there, so the title floats over the content without a
+        // material behind it.
+        let navigationBar = UINavigationBarAppearance()
+        navigationBar.configureWithDefaultBackground()
+        UINavigationBar.appearance().standardAppearance = navigationBar
+        UINavigationBar.appearance().compactAppearance = navigationBar
+        UINavigationBar.appearance().scrollEdgeAppearance = navigationBar
+        UINavigationBar.appearance().compactScrollEdgeAppearance = navigationBar
     }
 }
 
