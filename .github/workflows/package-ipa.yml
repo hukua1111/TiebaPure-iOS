@@ -36,11 +36,24 @@ jobs:
 
       - name: Build unsigned IPA
         run: |
-          scripts/package-unsigned-ipa.sh
-          test -f build/TiebaPure-unsigned.ipa
-          ls -lh build/TiebaPure-unsigned.ipa
-          shasum -a 256 build/TiebaPure-unsigned.ipa
-          printf 'IPA_PATH=build/TiebaPure-unsigned.ipa\n' >> "$GITHUB_ENV"
+          set -o pipefail
+          mkdir -p build
+          if scripts/package-unsigned-ipa.sh 2>&1 | tee build/package.log; then
+            test -f build/TiebaPure-unsigned.ipa
+            ls -lh build/TiebaPure-unsigned.ipa
+            shasum -a 256 build/TiebaPure-unsigned.ipa
+            printf 'IPA_PATH=build/TiebaPure-unsigned.ipa\n' >> "$GITHUB_ENV"
+          else
+            # Surface the failure in the job summary so the compiler diagnostics
+            # stay readable even where the raw step log is not accessible.
+            {
+              echo '### 打包失败：日志尾部'
+              echo '```'
+              tail -n 400 build/package.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
