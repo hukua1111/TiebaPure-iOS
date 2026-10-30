@@ -100,6 +100,7 @@
 - **不改业务与视图结构**：所有 `[Route]` 路径数组、`*NavigationPathPolicy`、路由枚举、测试都原样保留，改动集中在「API 边界」和「目的地闭包的位置」，因此回归面可控。
 - **不引入第三方依赖**：没有用 Introspect / NavigationStackBackport 之类库，滚动与分享的降级用几十行 `UIViewRepresentable` 完成。
 - **iOS 16+ 零变化**：每个兼容件的第一分支都是原 API 调用；`ContentBlockView` 新增的 `intrinsicContentSize` 用 `#unavailable(iOS 16.0)` 门控，16+ 完全不执行。
+- **测量只能拿文本快照**：`intrinsicContentSize` 借用的是视图自己的 `textStorage`，而 `NSTextStorage` 是可变对象，其 `hash` 随内容变化。全局高度缓存以 `NSAttributedString` 为 key，把活的 `textStorage` 插进去会违反「key 插入后哈希不得改变」，直接触发 `KEY_TYPE_OF_DICTIONARY_VIOLATES_HASHABLE_REQUIREMENTS` 断言崩溃（`EXC_BREAKPOINT`）。现在 `apply()` 在内容变更后留一份不可变快照，`Key.init` 也强制对可变入参取副本，该崩溃不再可能发生。
 - **可测的纯逻辑抽出来**：栈截断（`CompatibleNavigationPathPolicy.popping`）与延时换算（`CompatibleTaskDelay.nanoseconds`）是不依赖 UI 的纯函数，已加单元测试，避免 iOS 15 分支成为「只能靠肉眼验证」的盲区。
 
 ## 6. 验证步骤（macOS + Xcode）

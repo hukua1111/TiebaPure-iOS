@@ -199,4 +199,70 @@ final class InlineTextReuseTests: XCTestCase {
             InlineContentTextViewPool.capacity
         )
     }
+
+    // MARK: - Measurement keys must not alias mutable text
+
+    @MainActor
+    private func measurementKey(
+        for text: NSAttributedString,
+        width: CGFloat = 320
+    ) -> InlineContentTextMeasurementCache.Key {
+        let traits = UITraitCollection.current
+        return InlineContentTextMeasurementCache.Key(
+            attributedText: text,
+            width: width,
+            maximumNumberOfLines: 0,
+            lineBreakMode: NSLineBreakMode.byWordWrapping.rawValue,
+            displayScale: 3,
+            contentSizeCategory: traits.preferredContentSizeCategory.rawValue,
+            legibilityWeight: traits.legibilityWeight.rawValue
+        )
+    }
+
+    /// A dictionary key may not change its hash after insertion. `NSTextStorage`
+    /// hashes its contents and is rewritten in place, so the shared cache has to
+    /// copy it: aliasing a live storage crashed the app with
+    /// `KEY_TYPE_OF_DICTIONARY_VIOLATES_HASHABLE_REQUIREMENTS`.
+    @MainActor
+    func testMeasurementKeySnapshotsMutableText() {
+        let mutable = NSMutableAttributedString(attributedString: paragraph("同一段内容"))
+        let key = measurementKey(for: mutable)
+        let rebuilt = measurementKey(for: paragraph("同一段内容"))
+
+        XCTAssertEqual(key, rebuilt, "快照后应与等价内容生成同一个 key")
+
+        mutable.append(NSAttributedString(string: "追加内容"))
+
+        XCTAssertEqual(key, rebuilt, "源文本变化不应改变已经构造好的 key")
+        XCTAssertEqual(key.hashValue, rebuilt.hashValue)
+
+        InlineContentTextMeasurementCache.store(height: 42, for: key)
+        let cached = InlineContentTextMeasurementCache.height(for: rebuilt)
+        XCTAssertEqual(cached ?? -1, 42, "同一内容必须命中同一条缓存")
+    }
+
+    /// The iOS 15 sizing path measures the view's own live text storage.
+    @MainActor
+    func testFittingSizeAcceptsALiveTextStorage() {
+        let view = InlineContentTextView()
+        view.frame = CGRect(x: 0, y: 0, width: 320, height: 100)
+
+        for text in ["第一段", "第二段完全不同的内容，用于触发容器重排", "第三段"] {
+            view.textStorage.setAttributedString(paragraph(text))
+            let size = view.fittingSize(
+                width: 320,
+                attributedText: view.textStorage,
+                maximumNumberOfLines: 0,
+                lineBreakMode: .byWordWrapping
+            )
+            XCTAssertGreaterThan(size.height, 0)
+        }
+
+        // Rewriting the storage after a measurement must not corrupt the shared
+        // dictionary: every later lookup and insert is expected to survive.
+        XCTAssertLessThanOrEqual(
+            InlineContentTextMeasurementCache.cachedHeightCount,
+            InlineContentTextMeasurementCache.capacity
+        )
+    }
 }

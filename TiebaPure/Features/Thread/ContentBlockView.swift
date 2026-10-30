@@ -520,6 +520,12 @@ final class InlineContentTextView: UITextView {
     private var cachedFittingSize: CGSize = .zero
     private var lastIntrinsicContentWidth: CGFloat = 0
     private var isMeasuringIntrinsicSize = false
+    /// Immutable snapshot of the live text, refreshed whenever the content
+    /// changes. `InlineContentTextMeasurementCache` keys its dictionary on this
+    /// object, and a dictionary key must never change its hash after insertion:
+    /// `NSTextStorage` is mutable and every `apply` rewrites it, so the cache is
+    /// only ever given a copy.
+    private var measurementSnapshot: NSAttributedString?
 
     init() {
         // Let UITextView own its single live TextKit stack. Supplying a custom
@@ -571,6 +577,9 @@ final class InlineContentTextView: UITextView {
         appliedRenderID = nil
         cachedFittingText = nil
         cachedFittingRenderID = nil
+        // UIKit rewrites the live storage's fonts in place for a new content
+        // size category, so the snapshot no longer describes what is drawn.
+        measurementSnapshot = nil
     }
 
     func installPlainTextTap(_ recognizer: UITapGestureRecognizer) {
@@ -624,6 +633,7 @@ final class InlineContentTextView: UITextView {
         cachedFittingLineBreakMode = .byWordWrapping
         cachedFittingDisplayScale = 0
         cachedFittingSize = .zero
+        measurementSnapshot = nil
         normalizeContentOffsetIfTextSelectionIsInactive()
     }
 
@@ -663,6 +673,8 @@ final class InlineContentTextView: UITextView {
         if needsTextReplacement {
             textStorage.setAttributedString(attributedText)
             appliedRenderID = renderID
+            measurementSnapshot = InlineContentTextMeasurementCache
+                .immutableSnapshot(of: textStorage)
             needsLayoutInvalidation = true
         }
         if textContainer.maximumNumberOfLines != maximumNumberOfLines {
@@ -904,9 +916,22 @@ final class InlineContentTextView: UITextView {
         guard width > 0, textStorage.length > 0 else {
             return CGSize(width: UIView.noIntrinsicMetric, height: 0)
         }
+        // Never hand `textStorage` to the measurement cache: it is mutated in
+        // place by `apply`, by UIKit's Dynamic Type rewriting and by link
+        // attributes, and its hash changes with the content. Inserting a live
+        // storage into a Dictionary keyed on it trips Swift's hashable
+        // invariant check and terminates the process (`EXC_BREAKPOINT`).
+        let snapshot: NSAttributedString
+        if let measurementSnapshot {
+            snapshot = measurementSnapshot
+        } else {
+            let copied = InlineContentTextMeasurementCache.immutableSnapshot(of: textStorage)
+            measurementSnapshot = copied
+            snapshot = copied
+        }
         return fittingSize(
             width: width,
-            attributedText: textStorage,
+            attributedText: snapshot,
             renderID: appliedRenderID,
             maximumNumberOfLines: textContainer.maximumNumberOfLines,
             lineBreakMode: textContainer.lineBreakMode
@@ -975,6 +1000,37 @@ enum InlineContentTextMeasurementCache {
         let displayScale: CGFloat
         let contentSizeCategory: String
         let legibilityWeight: Int
+
+        init(
+            attributedText: NSAttributedString,
+            width: CGFloat,
+            maximumNumberOfLines: Int,
+            lineBreakMode: Int,
+            displayScale: CGFloat,
+            contentSizeCategory: String,
+            legibilityWeight: Int
+        ) {
+            // Swift requires a dictionary key to keep the hash it was inserted
+            // with. `NSAttributedString` hashes its contents, and its mutable
+            // subclasses (`NSTextStorage` above all) are rewritten in place, so
+            // the key takes an immutable copy instead of aliasing the caller's
+            // object.
+            self.attributedText = InlineContentTextMeasurementCache
+                .immutableSnapshot(of: attributedText)
+            self.width = width
+            self.maximumNumberOfLines = maximumNumberOfLines
+            self.lineBreakMode = lineBreakMode
+            self.displayScale = displayScale
+            self.contentSizeCategory = contentSizeCategory
+            self.legibilityWeight = legibilityWeight
+        }
+    }
+
+    /// Returns `text` unchanged when it is already immutable, so the ordinary
+    /// sizing path does not pay for a copy of the paragraph.
+    static func immutableSnapshot(of text: NSAttributedString) -> NSAttributedString {
+        guard text is NSMutableAttributedString else { return text }
+        return text.copy() as? NSAttributedString ?? NSAttributedString(attributedString: text)
     }
 
     // A few screens of runs at a couple of widths. Entries are tiny, and the
@@ -998,10 +1054,14 @@ enum InlineContentTextMeasurementCache {
         }
         guard heights.count > capacity else { return }
         let overflow = heights.count - capacity / 2
-        for key in insertionOrder.prefix(overflow) {
-            heights.removeValue(forKey: key)
+        // `insertionOrder` can be shorter than `overflow` when keys were
+        // evicted and reinserted, so the drop count is clamped.
+        let dropCount = min(overflow, insertionOrder.count)
+        guard dropCount > 0 else { return }
+        for staleKey in insertionOrder.prefix(dropCount) {
+            heights.removeValue(forKey: staleKey)
         }
-        insertionOrder.removeFirst(overflow)
+        insertionOrder.removeFirst(dropCount)
     }
 
     static func drain() {
