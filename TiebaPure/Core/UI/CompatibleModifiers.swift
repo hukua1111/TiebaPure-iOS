@@ -398,6 +398,41 @@ extension View {
     }
 }
 
+// MARK: - Shapes
+
+/// Top-only rounded corners, which `UnevenRoundedRectangle` provides from iOS 16
+/// on. iOS 15 draws the same outline with four straight edges and two quarter
+/// arcs.
+struct CompatibleTopRoundedRectangle: Shape {
+    var radius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        if #available(iOS 16.0, *) {
+            return UnevenRoundedRectangle(
+                topLeadingRadius: radius,
+                topTrailingRadius: radius
+            ).path(in: rect)
+        }
+
+        let clamped = min(max(radius, 0), min(rect.width, rect.height) / 2)
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + clamped))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.minX + clamped, y: rect.minY),
+            control: CGPoint(x: rect.minX, y: rect.minY)
+        )
+        path.addLine(to: CGPoint(x: rect.maxX - clamped, y: rect.minY))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.maxX, y: rect.minY + clamped),
+            control: CGPoint(x: rect.maxX, y: rect.minY)
+        )
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
 // MARK: - Foundation
 
 extension URL {

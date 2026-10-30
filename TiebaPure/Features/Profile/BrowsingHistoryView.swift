@@ -44,9 +44,11 @@ struct BrowsingHistoryView: View {
             placement: .navigationBarDrawer(displayMode: .automatic),
             prompt: "搜索标题、作者或贴吧"
         )
+        // `ToolbarContentBuilder` only gained `buildIf` in iOS 16, so the
+        // conditions sit inside the items instead of around them.
         .toolbar {
-            if isEditing {
-                ToolbarItem(placement: .navigationBarLeading) {
+            ToolbarItem(placement: .navigationBarLeading) {
+                if isEditing {
                     Button(allVisibleEntriesAreSelected ? "取消全选" : "全选") {
                         selectedThreadIDs = LocalThreadListSelectionPolicy
                             .selectionByTogglingAll(
@@ -59,8 +61,8 @@ struct BrowsingHistoryView: View {
                 }
             }
 
-            if isEditing == false, historyStore.items.isEmpty == false {
-                ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if isEditing == false, historyStore.items.isEmpty == false {
                     Button("清空") {
                         showsClearConfirmation = true
                     }
@@ -70,14 +72,13 @@ struct BrowsingHistoryView: View {
                 }
             }
 
-            if visibleEntries.isEmpty == false || isEditing {
-                ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if visibleEntries.isEmpty == false || isEditing {
                     EditButton()
                         .minTouchTarget()
                         .accessibilityIdentifier("browsing-history-edit")
                 }
             }
-
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             selectionBar

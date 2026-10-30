@@ -85,11 +85,13 @@ struct UserProfileView: View {
         .background(TiebaPureTheme.ColorToken.readerGroupedBackground)
         .navigationTitle("用户主页")
         .navigationBarTitleDisplayMode(.inline)
+        // `ToolbarContentBuilder` only gained `buildIf` in iOS 16, so the
+        // condition sits inside the item instead of around it.
         .toolbar {
-            // Do not expose the destructive block action while identity is
-            // still unknown; a fast tap used to allow blocking oneself.
-            if let profile, profile.isCurrentUser == false {
-                ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                // Do not expose the destructive block action while identity is
+                // still unknown; a fast tap used to allow blocking oneself.
+                if let profile, profile.isCurrentUser == false {
                     Menu {
                         blockToggleButton
                     } label: {
